@@ -28,8 +28,6 @@ public class WireKunai extends EntityFishingHook {
         this.motZ = (double)(MathHelper.cos(this.yaw / 180.0F * 3.1415927F) * MathHelper.cos(this.pitch / 180.0F * 3.1415927F) * f);
         this.motY = (double)(-MathHelper.sin(this.pitch / 180.0F * 3.1415927F) * f);
         this.c(this.motX, this.motY, this.motZ, 1.5F, 1.0F);
-
-        this.m.setAccessible(true);
     }
 
     private int g = -1;
@@ -52,8 +50,6 @@ public class WireKunai extends EntityFishingHook {
     private double aC = this.getClass().getDeclaredField("aC").getDouble(this);
     private double aD = this.getClass().getDeclaredField("aD").getDouble(this);
     private double aE = this.getClass().getDeclaredField("aE").getDouble(this);
-
-    Method m = this.getClass().getDeclaredMethod("m");
 
     @Override
     public void t_() {
@@ -338,19 +334,6 @@ public class WireKunai extends EntityFishingHook {
                 b0 = 3;
             } else if (this.av > 0) {
                 EntityItem entityitem = null;
-                try {
-                    entityitem = new EntityItem(this.world, this.locX, this.locY, this.locZ, (ItemStack) this.m.invoke(this));
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-                playerFishEvent = new PlayerFishEvent((Player)this.owner.getBukkitEntity(), entityitem.getBukkitEntity(), (Fish)this.getBukkitEntity(), PlayerFishEvent.State.CAUGHT_FISH);
-                playerFishEvent.setExpToDrop(this.random.nextInt(6) + 1);
-                this.world.getServer().getPluginManager().callEvent(playerFishEvent);
-                if (playerFishEvent.isCancelled()) {
-                    return 0;
-                }
 
                 double d5 = this.owner.locX - this.locX;
                 double d6 = this.owner.locY - this.locY;
@@ -361,9 +344,6 @@ public class WireKunai extends EntityFishingHook {
                 entityitem.motY = d6 * d9 + (double)MathHelper.sqrt(d8) * 0.08D;
                 entityitem.motZ = d7 * d9;
                 this.world.addEntity(entityitem);
-                if (playerFishEvent.getExpToDrop() > 0) {
-                    this.owner.world.addEntity(new EntityExperienceOrb(this.owner.world, this.owner.locX, this.owner.locY + 0.5D, this.owner.locZ + 0.5D, playerFishEvent.getExpToDrop()));
-                }
 
                 b0 = 1;
             }
