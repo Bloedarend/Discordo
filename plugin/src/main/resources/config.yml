@@ -1,0 +1,11 @@
+# Enable modules here by setting the values below to true.
+# Type: Boolean
+modules:
+  bows: false
+  damage: false
+  fishing-rods: false
+  projectiles: false
+
+# The version of this config file.
+# (!) Do not change this value.
+file-version: 1

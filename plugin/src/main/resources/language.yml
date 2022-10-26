@@ -1,0 +1,46 @@
+# Valid placeholders are: %prefix%, %player_name%, %player_displayname%
+# Some messages may have different placeholders, which will only work for that specific message.
+
+# The following colors can be used inside this language file.
+# &x, &y and &z will be replaced with the corresponding colors.
+# Type: Char
+color-x: '8'
+color-y: '7'
+color-z: 'f'
+
+# The placeholder %prefix% will be replaced by this value
+prefix: "●"
+
+exceptions:
+  incorrect-usage: "&4%prefix% &cIncorrect usage! &4/%usage%&c."
+  invalid-boolean: "&4%prefix% &cExpected true or false, but found &4%input%&c!"
+  invalid-command: "&4%prefix% &cCommand &4%input% &cdoes not exist!"
+  invalid-number: "&4%prefix% &cExpected a number, but found &4%input%&c!"
+  invalid-player: "&4%prefix% &cPlayer &4%input% &ccould not be found!"
+  missing-argument: "&4%prefix% &cYou must specify a value for &4%parameter%&c!"
+  no-permission: "&4%prefix% &cYou do not have permission to run this command!"
+  no-subcommand: "&4%prefix% &cYou need to specify a subcommand!"
+  number-not-in-range: "&4%prefix% &4%input% &cmust be between &4%min% &cand &4%max%&c!"
+  sender-not-console: "&4%prefix% &cThis command can only be executed in console!"
+  sender-not-player: "&4%prefix% &cThis command can only be executed by players!"
+
+
+commands:
+  default:
+    title: "&x&lShinobi Mechanics"
+    line: "&x %prefix% &y%property%: &z%value%"
+    separator: "&x&m----------------------------------"
+    use-separator: true
+  help:
+    description: "View the help menu."
+    title: "&x&lShinobi Mechanics"
+    line: "&x %prefix% &y/%command%: &z%command_description%"
+    separator: "&x&m----------------------------------"
+    use-separator: true
+  reload:
+    description: "Reload the plugin."
+    success: "&x%prefix% &yThe plugin was successfully reloaded! (&z%duration%ms&y)"
+
+# The version of this config file.
+# (!) Do not change this value.
+file-version: 1

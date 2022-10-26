@@ -1,0 +1,9 @@
+main: dev.bloedarend.shinobimechanics.plugin.Main
+
+name: ${project.parent.artifactId}
+description: ${project.parent.description}
+website: https://bloedarend.dev
+authors: [ Bloedarend ]
+
+version: ${project.parent.version}
+api-version: 1.8.8
