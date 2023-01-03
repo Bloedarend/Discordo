@@ -1,0 +1,7 @@
+# The token used to log in to the bot.
+# Type: String
+token: "put your token here"
+
+# The version of this config file.
+# (!) Do not change this value.
+file-version: 1

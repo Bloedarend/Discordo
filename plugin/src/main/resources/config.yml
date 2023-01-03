@@ -1,10 +1,38 @@
-# Enable modules here by setting the values below to true.
-# Type: Boolean
-modules:
-  bows: false
-  damage: false
-  fishing-rods: false
-  projectiles: false
+discord:
+  # Allow messages to be sent from Minecraft to Discord.
+  # Type: Boolean
+  allow-messages: true
+
+minecraft:
+  # Allow messages to be sent from Discord to Minecraft.
+  # Type: Boolean
+  allow-messages: true
+
+  # Allow the usage of color codes in messages.
+  # Type: Boolean
+  allow-color-codes: false
+
+  mentions:
+    # Display mentions of users, channels and roles like on Discord.
+    # Normally they would look something like <@123456789012345678>.
+    # Type: Boolean
+    display-nicely: true
+
+    # Add color to the mentions like on Discord.
+    # Type: Boolean
+    highlight: true
+
+  emotes:
+    # Display emotes in text, like :emote:.
+    # Normally they would look something like [] or <a:emote:123456789012345678>.
+    # Type: Boolean
+    display-nicely: true
+
+    # Remove emotes from the final message completely.
+    # Type: Boolean
+    remove: false
+
+
 
 # The version of this config file.
 # (!) Do not change this value.

@@ -11,6 +11,22 @@ color-z: 'f'
 # The placeholder %prefix% will be replaced by this value
 prefix: "●"
 
+minecraft:
+  # The format in which Discord messages will be shown in Minecraft.
+  # Valid placeholders are: %member_name%, %member_displayname%, %member_tag%, %member_roles%, %role_name%, %role_color%, %message%
+  format: "&x[&#5865F2&lDISCORD&x] %role_color%%member_displayname%&x: &z%message%"
+  hover:
+    - "&x&lUser information"
+    - "&x %prefix% &yTag: &z%member_tag%"
+    - "&x %prefix% &yRoles: &z%member_roles%"
+
+  # The placeholder %member_roles% returns a list of all roles that the member has.
+  # Below is the format for each item in that list.
+  # Valid placeholders are: %current_role_name% %current_role_color%
+  member-roles:
+    format: "%current_role_color%%current_role_name%"
+    separator: "&z, "
+
 exceptions:
   incorrect-usage: "&4%prefix% &cIncorrect usage! &4/%usage%&c."
   invalid-boolean: "&4%prefix% &cExpected true or false, but found &4%input%&c!"
@@ -27,13 +43,13 @@ exceptions:
 
 commands:
   default:
-    title: "&x&lShinobi Mechanics"
+    title: "&x&lDiscordo"
     line: "&x %prefix% &y%property%: &z%value%"
     separator: "&x&m----------------------------------"
     use-separator: true
   help:
     description: "View the help menu."
-    title: "&x&lShinobi Mechanics"
+    title: "&x&lDiscordo"
     line: "&x %prefix% &y/%command%: &z%command_description%"
     separator: "&x&m----------------------------------"
     use-separator: true
