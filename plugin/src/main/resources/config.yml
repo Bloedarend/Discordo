@@ -1,38 +1,105 @@
-discord:
-  # Allow messages to be sent from Minecraft to Discord.
-  # Type: Boolean
-  allow-messages: true
+# The id of the guild the bot should send messages to.
+# Type: String
+guild-id: "012345678901234567"
 
+# The id of the channel the bot should send messages to.
+# Type: String
+channel-id: "012345678901234567"
+
+# This section concerns messages sent from Minecraft to Discord.
+# The entire chat format will be taken from Minecraft and outputted as an image to Discord.
 minecraft:
-  # Allow messages to be sent from Discord to Minecraft.
+  # Display messages from Minecraft in the Discord chat.
   # Type: Boolean
-  allow-messages: true
+  enabled: true
 
-  # Allow the usage of color codes in messages.
+  # Translate color codes in messages sent by players.
+  # If true, players can use color codes in their messages.
+  # If false, color codes will be removed from the player message.
+  #
+  # Note that, this setting does not affect the entire chat format, but only the message sent by the player.
   # Type: Boolean
-  allow-color-codes: false
+  translate-color-codes: false
+
+  text-shadow:
+    # Put a text shadow behind the text.
+    # Type: Boolean
+    enabled: true
+
+    # How dark the text shadow should be.
+    # Type: Integer
+    darkness: 3
+
+  image:
+    # How much extra empty space should be between lines.
+    # Type: Integer
+    spacing: 0
+
+    # How much empty space should be around the message.
+    # Type: Integer
+    padding: 8
+
+    # The width of the image. The higher the width, the more text will fit on one line.
+    # Type: Integer
+    width: 900
+
+    # The opacity of the chat background in the image.
+    # Type: Float
+    background-opacity: 0.4
+
+  join:
+    # Send a message to Discord when a player joins the server.
+    # This message can be configured inside the 'language.yml' file.
+    # Type: Boolean
+    enabled: true
+
+    # A join message won't be sent if a player has the permission 'discordo.silent.join'.
+    # Type: Boolean
+    silent: false
+
+  leave:
+    # Send a message to Discord when a player leaves the server.
+    # This message can be configured inside the 'language.yml' file.
+    # Type: Boolean
+    enabled: true
+
+    # A leave message won't be sent if a player has the permission 'discordo.silent.leave'.
+    # Type: Boolean
+    silent: false
+
+# This section concerns messages sent from Discord to Minecraft.
+discord:
+  # Display messages from Discord in the Minecraft chat.
+  # Type: Boolean
+  enabled: true
+
+  # Translate color codes in messages sent by members.
+  # If true, members can use color codes in their messages.
+  # If false, color codes will be removed from the player message.
+  #
+  # Note that, this setting does not affect the entire chat format, but only the message sent by the member.
+  # Type: Boolean
+  translate-color-codes: false
 
   mentions:
-    # Display mentions of users, channels and roles like on Discord.
+    # Display mentions of users, channels and roles like Discord.
     # Normally they would look something like <@123456789012345678>.
     # Type: Boolean
-    display-nicely: true
+    enabled: true
 
-    # Add color to the mentions like on Discord.
+    # Add color to highlight the mentions like Discord.
     # Type: Boolean
     highlight: true
 
   emotes:
-    # Display emotes in text, like :emote:.
+    # Display emotes like :emote:.
     # Normally they would look something like [] or <a:emote:123456789012345678>.
     # Type: Boolean
-    display-nicely: true
+    enabled: true
 
-    # Remove emotes from the final message completely.
+    # Remove emotes from messages completely.
     # Type: Boolean
     remove: false
-
-
 
 # The version of this config file.
 # (!) Do not change this value.

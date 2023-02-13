@@ -24,9 +24,9 @@ class Main: JavaPlugin() {
             configs.loadConfigs(this)
 
             messages = Messages(configs)
-            images = Images(this, messages)
-            bot = Bot(this, configs, messages)
-            events = Events(configs, helpers, messages, bot, images)
+            images = Images(this, configs, helpers)
+            bot = Bot(this, configs, messages, helpers)
+            events = Events(configs, messages, bot, images)
             commands = Commands(configs, events, messages, this)
 
             startBot()

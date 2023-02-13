@@ -2,6 +2,7 @@ package dev.bloedarend.discordo.kord
 
 import dev.bloedarend.discordo.kord.events.MessageCreate
 import dev.bloedarend.discordo.plugin.utils.Configs
+import dev.bloedarend.discordo.plugin.utils.Helpers
 import dev.bloedarend.discordo.plugin.utils.Messages
 import dev.kord.core.Kord
 import dev.kord.core.event.message.MessageCreateEvent
@@ -11,17 +12,14 @@ import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import kotlinx.coroutines.flow.*
 import net.md_5.bungee.api.ChatColor
-import org.bukkit.Bukkit
 import org.bukkit.plugin.Plugin
 
-class Bot(private val plugin: Plugin, configs: Configs, private val messages: Messages) {
+class Bot(private val plugin: Plugin, configs: Configs, messages: Messages, helpers: Helpers) {
 
     var client: Kord? = null
+    private val token = configs.getConfig("token")?.getString("token")
 
-    private val config = configs.getConfig("token")
-    private val token = config?.getString("token")
-
-    private val messageCreate = MessageCreate(configs, messages, plugin)
+    private val messageCreate = MessageCreate(plugin, configs, messages, helpers)
 
     suspend fun start() {
         initialize()

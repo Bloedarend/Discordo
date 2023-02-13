@@ -2,6 +2,7 @@ package dev.bloedarend.discordo.plugin.utils
 
 import org.bukkit.plugin.Plugin
 import org.imgscalr.Scalr
+import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Font
 import java.awt.Graphics2D
@@ -9,18 +10,26 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import java.util.LinkedList
 import java.util.regex.Pattern
 import javax.imageio.ImageIO
 
-class Images(private val plugin: Plugin, private val messages: Messages) {
+class Images(plugin: Plugin, configs: Configs, private val helpers: Helpers) {
 
-    private val padding = 3
+    private val config = configs.getConfig("config")
+
+    private val textShadowEnabled = config?.getBoolean("minecraft.text-shadow.enabled") ?: true
+    private val textShadowDarkness = config?.getInt("minecraft.text-shadow.darkness") ?: 3
+    private val spacing = config?.getInt("minecraft.image.spacing") ?: 3
+    private val padding = config?.getInt("minecraft.image.padding") ?: 8
+    private val width = config?.getInt("minecraft.image.width") ?: 900
+    private val backgroundOpacity = config?.getFloat("minecraft.image.background-opacity") ?: 0.4F
+
     private val fontSize = 30F
     private val height = (fontSize + padding * 2).toInt()
-    private val width = (fontSize * 30).toInt()
     private val maxStringWidth = width - 2 * padding
 
-    private val backgroundColor = Color(0F, 0F, 0F, 0.4F)
+    private val backgroundColor = Color(0F, 0F, 0F, backgroundOpacity)
     private var image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
     private var g2d: Graphics2D = image.createGraphics()
 
@@ -29,97 +38,155 @@ class Images(private val plugin: Plugin, private val messages: Messages) {
     private val fontItalic = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftItalic-R8Mo.ttf")).deriveFont(fontSize)
     private val fontBoldItalic = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftBoldItalic-1y1e.ttf")).deriveFont(fontSize)
 
-    private var currentFont = fontBold
+    private var currentFont = fontRegular
     private var currentColor = Color.WHITE
     private var currentStyles = ""
     private var currentWidth = 0
     private var currentPosition = 0
 
-    private val colorCodeRegex = "&([a-fA-F0-9]|r|R)"
-    private val colorRegex = "&([a-fA-F0-9]|r|R)|(#[a-fA-F0-9]{6})"
-    private val styleRegex = "&(k|K|l|L|m|M|n|N|o|O)"
-
-    private var line = ArrayList<ArrayList<Triple<String, String, Color>>>()
-    private val lines = ArrayList<ArrayList<ArrayList<Triple<String, String, Color>>>>()
+    private var line = ""
+    private val lines = LinkedList<String>()
 
     init {
-        g2d.font = currentFont
-        g2d.color = currentColor
-        g2d.background = backgroundColor
-        g2d.clearRect(0, 0, image.width, image.height)
+        initGraphics2D(g2d)
     }
 
     fun getInputStream(message: String) : InputStream {
-        val words = message.split(" ")
-
         // Reset all properties
         currentFont = fontRegular
         currentColor = Color.WHITE
+        currentStyles = ""
         currentWidth = 0
         currentPosition = 0
-        line.clear()
+        line = ""
         lines.clear()
-        resize()
+        resize(1)
+
+        val words = message.split(" ")
 
         words.forEach {
-            val textObjects = ArrayList<Triple<String, String, Color>>()
-            var word = it
-            var stringWidth = 0
+            val stringWidth = getStringWidth("$it ")
 
-            val pattern = Pattern.compile("&([a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O)|(#[a-fA-F0-9]{6})") // Regex for every color code and hex color code.
-            var matcher = pattern.matcher(word)
+            // Check if the text object should be split up, go to the next line or remain on the same line.
+            if (stringWidth > maxStringWidth) {
+                // The string is too long to fit onto one line. Add the current line to the lines.
+                lines.add(line)
 
+                val characters = it.toCharArray()
+                var style = ""
+                var newTextFormatted = " "
+
+                // Loop over every character in the string to check where the string should be split up.
+                characters.forEach { character ->
+                    val textWidth = getStringWidth(newTextFormatted)
+                    val characterWidth = getStringWidth(character.toString())
+
+                    if (textWidth + characterWidth > maxStringWidth) {
+                        // The string is too big to fit onto one line. Add the current text to the lines.
+                        lines.add(newTextFormatted)
+                        newTextFormatted = " "
+                    }
+
+                    // Check if the character array contains the start of a code.
+                    if (character == '&') {
+                        // The character is an '&', which indicates a potential start of a code.
+                        style = character.toString()
+                    } else if (style.contains("&")) {
+                        // The style contains a '&', which means we should look to complete this code.
+                        if (character.toString().matches(Regex("[a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O"))) {
+                            // A regular Minecraft code was found.
+                            newTextFormatted += "&$character"
+                            style = ""
+                        } else if (character == '#') {
+                            // The start of a potential hex code was found.
+                            style += character
+                        } else {
+                            // The code was not completed.
+                            newTextFormatted += style
+                            style = ""
+                        }
+                    } else if (style.contains("#")) {
+                        // The style contains a '#', which means we should look for a combination of 6 valid hex code characters.
+                        if (character.toString().matches(Regex("&#[0-9a-fA-F]"))) {
+                            // The current character could be part of a hex code.
+                            if (style.length == 7) {
+                                // The current style is of length 7. By adding the current character, the hex code will be complete.
+                                newTextFormatted += "$style$character"
+                                style = ""
+                            } else {
+                                // The hex code is not complete.
+                                style += character
+                            }
+                        } else {
+                            // The character is not a valid hex code character, so add the style + character to the string.
+                            newTextFormatted += "$style$character"
+                            style = ""
+                        }
+                    } else {
+                        // The character has nothing to do with codes, so add it to the string.
+                        newTextFormatted += character
+                    }
+
+                    // Set the remaining text to the current line.
+                    line = newTextFormatted
+                }
+            } else if (stringWidth + currentWidth < maxStringWidth) {
+                // The text will be able to fit on the line just fine.
+                currentWidth += stringWidth
+                line += "$it "
+            } else {
+                // The text won't fit on the current line, so put it onto the next one.
+                currentWidth = getStringWidth(" $it ")
+                lines.add(line)
+                line = " $it "
+            }
+        }
+
+        // Add the remaining line to the lines.
+        lines.add(line)
+        resize(lines.size)
+
+        // Loop over every line and draw it.
+        lines.forEachIndexed { index, it ->
+            var line = it
+            var position = 0
+
+            val pattern = Pattern.compile("&(([a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O)|(#[a-fA-F0-9]{6}))") // Regex for every color code and hex color code.
+            var matcher = pattern.matcher(line)
+
+            // Look for a code.
             while (matcher.find()) {
-                val text = word.substring(0, matcher.start()) // The text before the code.
-                val code = word.substring(matcher.start(), matcher.end())
+                val text = line.substring(0, matcher.start()) // The text before the code.
+                val code = line.substring(matcher.start(), matcher.end())
 
-                // The code that was found represents a color.
-                if (code.matches(Regex("&([a-fA-F0-9]|r|R)|(#[a-fA-F0-9]{6})"))) {
+                // Draw the string, then update the position.
+                drawText(text, index, position)
+                position += g2d.fontMetrics.stringWidth(text)
+
+                // Check if the code represents a color.
+                if (code.matches(Regex("&(([a-fA-F0-9]|r|R)|(#[a-fA-F0-9]{6}))"))) {
                     // After every color code, the styles are reset.
                     currentStyles = ""
-                    currentColor = getColor(code)
+                    currentColor = helpers.getColor(code)
+                    g2d.color = currentColor
                 }
 
-                // The code that was found represents a style.
+                // Check if the code represents a style.
                 if (code.matches(Regex("&(k|K|l|L|m|M|n|N|o|O)"))) {
                     currentStyles += code.substring(1)
                 }
 
-                stringWidth += g2d.fontMetrics.stringWidth(text)
-                textObjects.add(Triple(text, currentStyles, currentColor))
-
+                // Set properties for the next string.
                 currentFont = getFont(currentStyles)
                 g2d.font = currentFont
 
-                word = word.substring(matcher.end())
-                matcher = pattern.matcher(word)
+                // Update the line and matcher.
+                line = line.substring(matcher.end())
+                matcher = pattern.matcher(line)
             }
 
-            stringWidth += g2d.fontMetrics.stringWidth(word)
-            textObjects.add(Triple("$word ", currentStyles, currentColor))
-            addWord(textObjects, stringWidth)
-        }
-
-        currentFont = fontRegular
-        g2d.font = currentFont
-
-        lines.add(line)
-        resize()
-
-        lines.forEachIndexed{ index, line ->
-            var position = if (index > 0) (fontSize / 2).toInt() else 0
-            line.forEach{ word ->
-                word.forEach { textObject ->
-                    g2d.drawString(textObject.first, padding + position, ((index + 1) * (fontSize + padding) - fontSize / 6).toInt())
-                    position += g2d.fontMetrics.stringWidth(textObject.first)
-
-                    currentFont = getFont(textObject.second)
-                    currentColor = textObject.third
-
-                    g2d.font = currentFont
-                    g2d.color = currentColor
-                }
-            }
+            // Draw the remaining string.
+            drawText(line.replace(Regex("\\s+$"), ""), index, position)
         }
 
         val baos = ByteArrayOutputStream()
@@ -129,65 +196,100 @@ class Images(private val plugin: Plugin, private val messages: Messages) {
         return ByteArrayInputStream(baos.toByteArray())
     }
 
-    private fun resize() {
+    private fun drawText(text: String, index: Int, position: Int) {
+        val stringWidth = g2d.fontMetrics.stringWidth(text)
+        val textShadowOffset = (fontSize / 10).toInt()
+
+        val stringX = padding + position
+        val stringY = (padding + fontSize + index * (fontSize + spacing) - fontSize / 6).toInt()
+
+        var lineXStart = (position + fontSize / 7.5).toInt()
+        val lineXEnd = (position + stringWidth + fontSize / 10).toInt()
+        val nLineY = (padding + fontSize + index * (fontSize + spacing) - fontSize / 15).toInt()
+        val mLineY = (padding + fontSize + index * (fontSize + spacing) - fontSize / 2).toInt()
+
+        // Lines with an index bigger than 0 will start with a space. We do not want the line to be drawn on this space.
+        if (index > 0 && position == 0) {
+            lineXStart += g2d.fontMetrics.stringWidth(text.toCharArray()[0].toString())
+        }
+
+        // Draw the text shadow.
+        if (textShadowEnabled) {
+            g2d.color = helpers.darkenColor(currentColor, textShadowDarkness)
+            g2d.drawString(text, stringX + textShadowOffset, stringY + textShadowOffset)
+
+            if (currentStyles.lowercase().contains("n")) {
+                g2d.drawLine(lineXStart + textShadowOffset, nLineY + textShadowOffset, lineXEnd + textShadowOffset, nLineY + textShadowOffset)
+            }
+
+            if (currentStyles.lowercase().contains("m")) {
+                g2d.drawLine(lineXStart + textShadowOffset, mLineY + textShadowOffset, lineXEnd + textShadowOffset, mLineY + textShadowOffset)
+            }
+
+            g2d.color = currentColor
+        }
+
+        // Draw the formatted string.
+        g2d.drawString(text, stringX, stringY)
+
+        // Draw underline.
+        if (currentStyles.lowercase().contains("n")) {
+            g2d.drawLine(lineXStart, nLineY, lineXEnd, nLineY)
+        }
+
+        // Draw strikethrough
+        if (currentStyles.lowercase().contains("m")) {
+            g2d.drawLine(lineXStart, mLineY, lineXEnd, mLineY)
+        }
+    }
+
+    private fun resize(lineAmount: Int) {
         image.flush()
         g2d.dispose()
 
         // Rescale the image according to the amount of lines.
-        image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, width, padding + lines.size * (fontSize + padding).toInt())
+        image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, width, fontSize.toInt() + padding * 2 + (lineAmount - 1) * (fontSize + spacing).toInt())
         g2d = image.createGraphics()
 
-        g2d.font = currentFont
-        g2d.color = currentColor
-        g2d.background = backgroundColor
-        g2d.clearRect(0, 0, image.width, image.height)
+        initGraphics2D(g2d)
     }
 
-    private fun addWord(textObjects: ArrayList<Triple<String, String,Color>>, stringWidth: Int) {
-        println(stringWidth)
-        println(currentWidth)
-        // Check if the text object should be split up, go to the next line or remain on the same line.
-        if (stringWidth > maxStringWidth) {
-            // LOGIC FOR TOO LONG STRING
-        } else if (stringWidth + currentWidth < maxStringWidth) {
-            line.add(textObjects)
-        } else {
-            lines.add(line)
-            line = ArrayList()
-            line.add(textObjects)
-            currentWidth = 0
+    private fun getStringWidth(string: String) : Int {
+        var text = string
+        var styles = ""
+        var stringWidth = 0
+
+        val pattern = Pattern.compile("&(([a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O)|(#[a-fA-F0-9]{6}))") // Regex for every color code and hex color code.
+        var matcher = pattern.matcher(text)
+
+        // Look for a code.
+        while (matcher.find()) {
+            val subtext = text.substring(0, matcher.start()) // The text before the code.
+            val code = text.substring(matcher.start(), matcher.end())
+
+            // Reset style if a color code was found.
+            if (code.matches(Regex("&(([a-fA-F0-9]|r|R)|(#[a-fA-F0-9]{6}))"))) {
+                styles = ""
+            }
+
+            // Update style if it's a style.
+            if (code.matches(Regex("&(k|K|l|L|m|M|n|N|o|O)"))) {
+                styles += code.substring(1)
+            }
+
+            // Increment string width and then update the font for the next string.
+            stringWidth += g2d.fontMetrics.stringWidth(subtext)
+            g2d.font = getFont(styles)
+
+            // Update the text and the matcher.
+            text = text.substring(matcher.end())
+            matcher = pattern.matcher(text)
         }
 
-        currentWidth += stringWidth
-    }
+        // Add remaining width to the string width.
+        stringWidth += g2d.fontMetrics.stringWidth(text)
 
-    private fun getColor(colorCode: String) : Color {
-        val hex = (if (colorCode.matches(Regex(colorCodeRegex))) convertColorCodeToHex(colorCode) else colorCode)?.substring(1)
-
-        return Color.decode(hex)
-    }
-
-    private fun convertColorCodeToHex(colorCode: String) : String? {
-        return when (colorCode.lowercase()) {
-                "&0" -> "&#000000"
-                "&1" -> "&#0000aa"
-                "&2" -> "&#00aa00"
-                "&3" -> "&#00aaaa"
-                "&4" -> "&#aa0000"
-                "&5" -> "&#aa00aa"
-                "&6" -> "&#ffaa00"
-                "&7" -> "&#aaaaaa"
-                "&8" -> "&#555555"
-                "&9" -> "&#5555ff"
-                "&a" -> "&#55ff55"
-                "&b" -> "&#55ffff"
-                "&c" -> "&#ff5555"
-                "&d" -> "&#ff55ff"
-                "&e" -> "&#ffff55"
-                "&f" -> "&#ffffff"
-                "&r" -> "&#ffffff"
-                else -> null
-            }
+        return stringWidth
     }
 
     private fun getFont(styles: String) : Font {
@@ -198,6 +300,14 @@ class Images(private val plugin: Plugin, private val messages: Messages) {
             else if (isBold) fontBold
             else if (isItalic) fontItalic
             else fontRegular
+    }
+
+    private fun initGraphics2D(g2d: Graphics2D) {
+        g2d.font = currentFont
+        g2d.color = currentColor
+        g2d.background = backgroundColor
+        g2d.stroke = BasicStroke(3F)
+        g2d.clearRect(0, 0, image.width, image.height)
     }
 
 }

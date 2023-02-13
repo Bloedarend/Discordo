@@ -1,8 +1,7 @@
 package dev.bloedarend.discordo.plugin.utils
 
-import org.bukkit.Bukkit
-import org.bukkit.Material
 import org.bukkit.plugin.Plugin
+import java.awt.Color
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -20,10 +19,39 @@ class Helpers {
         return comparableVersion.group().toInt()
     }
 
-    fun getNMSVersion(): String {
-        // Get the package name and convert it to a version string formatted as: v0_0_R0
-        val version = Bukkit.getServer().javaClass.`package`.name
-        return version.substring(version.lastIndexOf('.') + 1)
+    fun getColor(colorCode: String) : Color {
+        val hex = (if (colorCode.matches(Regex("&([a-fA-F0-9]|r|R)"))) convertColorCodeToHex(colorCode) else colorCode)?.substring(1)
+
+        return Color.decode(hex)
+    }
+
+    private fun convertColorCodeToHex(colorCode: String) : String? {
+        return when (colorCode.lowercase()) {
+            "&0" -> "&#000000"
+            "&1" -> "&#0000aa"
+            "&2" -> "&#00aa00"
+            "&3" -> "&#00aaaa"
+            "&4" -> "&#aa0000"
+            "&5" -> "&#aa00aa"
+            "&6" -> "&#ffaa00"
+            "&7" -> "&#aaaaaa"
+            "&8" -> "&#555555"
+            "&9" -> "&#5555ff"
+            "&a" -> "&#55ff55"
+            "&b" -> "&#55ffff"
+            "&c" -> "&#ff5555"
+            "&d" -> "&#ff55ff"
+            "&e" -> "&#ffff55"
+            "&f" -> "&#ffffff"
+            "&r" -> "&#ffffff"
+            else -> null
+        }
+    }
+
+    fun darkenColor(color: Color, amount: Int) : Color {
+        if (amount <= 1) return color.darker()
+
+        return darkenColor(color.darker(), amount - 1)
     }
 
 }

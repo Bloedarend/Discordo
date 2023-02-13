@@ -12,8 +12,15 @@ color-z: 'f'
 prefix: "●"
 
 minecraft:
+  join: "&x[&a&l+&x] &y%player_name%"
+  leave: "&x[&c&l-&x] &y%player_name%"
+
+discord:
   # The format in which Discord messages will be shown in Minecraft.
   # Valid placeholders are: %member_name%, %member_displayname%, %member_tag%, %member_roles%, %role_name%, %role_color%, %message%
+  #
+  # The %role_name% placeholder will return the name of the highest role the member has with the setting 'Display separately' enabled.
+  # The %role_color% placeholder will return the color of the highest role the member has with a defined color. Invisible roles are ignored.
   format: "&x[&#5865F2&lDISCORD&x] %role_color%%member_displayname%&x: &z%message%"
   hover:
     - "&x&lUser information"
@@ -39,7 +46,6 @@ exceptions:
   number-not-in-range: "&4%prefix% &4%input% &cmust be between &4%min% &cand &4%max%&c!"
   sender-not-console: "&4%prefix% &cThis command can only be executed in console!"
   sender-not-player: "&4%prefix% &cThis command can only be executed by players!"
-
 
 commands:
   default:

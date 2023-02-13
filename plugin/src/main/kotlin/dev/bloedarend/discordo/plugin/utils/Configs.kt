@@ -13,10 +13,7 @@ import java.io.File
 
 class Configs(private val main: Main) {
 
-    // Make the HashMap 'static'.
-    companion object {
-        private val configFiles: HashMap<String, YamlDocument> = HashMap()
-    }
+    private val configFiles: HashMap<String, YamlDocument> = HashMap()
 
     fun loadConfigs(plugin: Plugin) {
         loadConfig("config", "config", plugin)
@@ -53,14 +50,21 @@ class Configs(private val main: Main) {
             value.reload()
         }
 
-        val oldClient = main.bot.client
+        // Store the original client.
+        val client = main.bot.client
 
         // Pass the new instance of the configs to the utils.
         main.messages = Messages(this)
-        main.bot = Bot(main as Plugin, this, main.messages)
-        main.events = Events(this, main.helpers, main.messages, main.bot, main.images)
+        main.images = Images(main, this, main.helpers)
+        main.bot = Bot(main as Plugin, this, main.messages, main.helpers)
+        main.events = Events(this, main.messages, main.bot, main.images)
         main.commands = Commands(this, main.events, main.messages, main)
 
-        main.startBot(oldClient)
+        // Start the bot.
+        main.startBot(client)
+
+        // Register commands and events.
+        main.commands.registerCommands()
+        main.events.registerListeners(main)
     }
 }

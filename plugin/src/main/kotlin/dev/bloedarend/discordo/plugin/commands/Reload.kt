@@ -15,7 +15,7 @@ class Reload(private val commands: Commands, private val configs: Configs, priva
 
     @Command("dco", "discordo")
     @Subcommand("reload")
-    @CommandPermission("discordo.reload")
+    @CommandPermission("discordo.command.reload")
     @Usage("dco reload")
     fun onCommand(sender: CommandSender) {
         val startTime = System.currentTimeMillis()
@@ -24,10 +24,8 @@ class Reload(private val commands: Commands, private val configs: Configs, priva
         commands.unregisterCommands()
         events.unregisterListeners()
 
-        // Reload configs and register all events and commands.
+        // Reload configs.
         configs.reloadConfigs()
-        commands.registerCommands()
-        events.registerListeners(plugin)
 
         messages.sendMessage("commands.reload.success", sender,
             Pair("%duration%", (System.currentTimeMillis() - startTime).toString())
