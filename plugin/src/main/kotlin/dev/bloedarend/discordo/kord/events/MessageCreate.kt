@@ -49,11 +49,94 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
         val guild = member.guild.asGuild()
         val roles = member.roles.toList().sortedDescending()
 
-        // TODO add default role color
+        var content =
+            if (translateColorCodes) {
+                org.bukkit.ChatColor.translateAlternateColorCodes('&', message.content)
+            } else {
+                // Remove all codes from the message.
+                message.content.replace(Regex("&(([a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O)|(#[a-fA-F0-9]{6}))"), "")
+            }
 
-        // TODO separate click and hover events
-        // TODO add hover and click event for attachments
-        // TODO add hover for mention information
+        if (mentionsEnabled) {
+            val memberPattern = Pattern.compile("<@[0-9]{17,20}>") // Pattern for discord members.
+            var memberMatcher = memberPattern.matcher(content)
+            while(memberMatcher.find()) {
+                val mentionedMember = guild.members.firstOrNull {
+                    it.id.value.toString() == content.substring(memberMatcher.start() + 2, memberMatcher.end() - 1)
+                }
+
+                // Make sure the member exists.
+                if (mentionedMember != null) {
+                    var newValue = "@${mentionedMember.displayName}"
+
+                    if (highlightMentions) {
+                        val colorCode = getLastColorCode(content.substring(0, memberMatcher.start()))
+                        val color = helpers.darkenColor(helpers.getColor(colorCode), 1)
+                        val highlightColorCode = String.format("&#%02x%02x%02x", color.red, color.green, color.blue)
+
+                        // Add a highlight onto the mention.
+                        newValue = "$highlightColorCode$newValue$colorCode"
+                    }
+
+                    content = content.replace(content.substring(memberMatcher.start(), memberMatcher.end()), newValue)
+                    memberMatcher = memberPattern.matcher(content)
+                }
+            }
+
+            val rolePattern = Pattern.compile("<@&[0-9]{17,20}>") // Pattern for guild roles.
+            var roleMatcher = rolePattern.matcher(content)
+            while (roleMatcher.find()) {
+                val role = guild.roles.firstOrNull {
+                    it.id.value.toString() == content.substring(roleMatcher.start() + 3, roleMatcher.end() -1)
+                }
+
+                // Make sure the role exists.
+                if (role != null) {
+                    content = content.replace(content.substring(roleMatcher.start(), roleMatcher.end()), "@${role.name}")
+                    roleMatcher = rolePattern.matcher(content)
+                }
+            }
+
+            val channelPattern = Pattern.compile("<#[0-9]{17,20}>") // Pattern for text and voice channels.
+            var channelMatcher = channelPattern.matcher(content)
+            while (channelMatcher.find()) {
+                val channel = guild.channels.firstOrNull {
+                    it.id.value.toString() == content.substring(channelMatcher.start() + 2, channelMatcher.end() - 1)
+                }
+
+                // Make sure the channel exists.
+                if (channel != null) {
+                    val icon =
+                        if (channel.type == ChannelType.GuildVoice || channel.type == ChannelType.GuildStageVoice) "♪" // Channel is voice.
+                        else "#" // Channel is text.
+
+                    content = content.replace(content.substring(channelMatcher.start(), channelMatcher.end()), "${icon}${channel.name}")
+                    channelMatcher = channelPattern.matcher(content)
+                }
+            }
+
+            val emotePattern = Pattern.compile("<a?:[a-zA-Z_0-9]+:[0-9]{17,20}>") // Pattern for custom emojis.
+            var emoteMatcher = emotePattern.matcher(content)
+            while (emoteMatcher.find()) {
+                if (removeEmotes) {
+                    // Remove emotes from the message.
+                    content = content.replace(content.substring(emoteMatcher.start(), emoteMatcher.end()), "")
+                } else if (emotesEnabled) {
+                    // Replace the emote with the name of the emote.
+                    val emote = content.substring(emoteMatcher.start(), emoteMatcher.end())
+                    content = content.replace(content.substring(emoteMatcher.start(), emoteMatcher.end()), emote.substring(emote.indexOf(':'), emote.lastIndexOf(':') + 1))
+                }
+
+                emoteMatcher = emotePattern.matcher(content)
+            }
+        }
+
+        // Do the same for regular emojis.
+        if (removeEmotes) {
+            content = EmojiParser.removeAllEmojis(content)
+        } else if (emotesEnabled) {
+            content = EmojiParser.parseToAliases(content)
+        }
 
         // Get the first colored role of the user.
         val colorRole = roles.firstOrNull {
@@ -83,24 +166,86 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
             Pair("%member_tag%", member.tag),
             Pair("%member_roles%", memberRoles.toList().joinToString(messages.getMessage("discord.member-roles.separator"))),
             Pair("%role_name%", roleName),
-            Pair("%role_color%", String.format("&#%02x%02x%02x", roleColor.red, roleColor.green, roleColor.blue))
+            Pair("%role_color%", String.format("&#%02x%02x%02x", roleColor.red, roleColor.green, roleColor.blue)),
+            Pair("%message%", content)
         )
 
-        val components = getComponents("discord.format", message.content, guild, *placeholders)
-        val hover = getComponents("discord.hover", message.content, guild, *placeholders)
-        val hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(hover))
-        val clickEvent = ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.com/channels/${message.getGuild().id.value}/${message.channelId.value}/${message.id.value}")
+        var format = messages.getMessage("discord.format", null, *placeholders)
+        val hover = messages.getMessage("discord.hover", null, *placeholders)
 
-        components.forEach {
-            it.hoverEvent = hoverEvent
-            it.clickEvent = clickEvent
+        // Split message on hover and click events.
+        val formats = ArrayList<String>()
+        val pattern = Pattern.compile("%((member_name)|(member_displayname)|(member_tag)|(message))%")
+        var matcher = pattern.matcher(format)
+
+        while (matcher.find()) {
+            if (matcher.start() > 0) {
+                formats.add(format.substring(0, matcher.start())) // Add previous string.
+            }
+
+            formats.add(format.substring(matcher.start(), matcher.end())) // Add the match.
+
+            format = format.substring(matcher.end())
+            matcher = pattern.matcher(format)
         }
 
-        plugin.server.spigot().broadcast(*components)
+        formats.add(format)
+
+
+
+
+
+        // TODO use pair list to differentiate between mention and attachment and other stuff.
+
+        val components = ArrayList<BaseComponent>()
+
+
+
+        val prefixComponents = getComponents(format.substring(0, format.indexOf("%message%")))
+        val suffixComponents = getComponents(format.substring(format.indexOf("%message%")))
+
+        prefixComponents.forEach {
+            it.hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(getComponents(hover)))
+            it.clickEvent = ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.com/channels/${message.getGuild().id.value}/${message.channelId.value}/${message.id.value}")
+        }
+
+        val broadcast = (components as MutableList<BaseComponent>).map { it }.toTypedArray()
+
+        plugin.server.spigot().broadcast(*broadcast)
     }
 
-    private suspend fun getComponents(path: String, content: String, guild: Guild, vararg placeholders: Pair<String, String>): Array<BaseComponent> {
-        var message = messages.getMessage(path, null, *placeholders)
+    private fun getComponents(string: String) : Array<BaseComponent> {
+        var message = string
+
+        // For some reason the reset code will not reset the message, but use the latest hex code.
+        // So here we'll replace it with '&f', to get the expected effect.
+        message = message.replace("&r", "&f")
+
+        val componentBuilder = ComponentBuilder()
+
+        val pattern = Pattern.compile("&#[a-fA-F0-9]{6}")
+        var matcher = pattern.matcher(message)
+        var color = ""
+
+        // Append a new component every time a hex code is found.
+        while (matcher.find()) {
+            componentBuilder.append(message.substring(0, matcher.start()))
+            if (color.isNotEmpty()) componentBuilder.currentComponent.color = ChatColor.of(color)
+
+            color = message.substring(matcher.start() + 1, matcher.end())
+            message = message.substring(matcher.end())
+            matcher = pattern.matcher(message)
+        }
+
+        // Append the remainder of the message.
+        componentBuilder.append(message)
+        if (color.isNotEmpty()) componentBuilder.currentComponent.color = ChatColor.of(color)
+
+        return componentBuilder.create()
+    }
+
+    private suspend fun getComponentss(string: String, content: String, guild: Guild): Array<BaseComponent> {
+        var message = string
         var messageContent = content
 
         // For some reason the reset code will not reset the message, but use the latest hex code.
@@ -115,86 +260,7 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
                 message.replace("%message%", messageContent.replace(Regex("&(([a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O)|(#[a-fA-F0-9]{6}))"), ""))
             }
 
-        if (mentionsEnabled) {
-            val memberPattern = Pattern.compile("<@[0-9]{17,20}>") // Pattern for discord members.
-            var memberMatcher = memberPattern.matcher(messageContent)
-            while(memberMatcher.find()) {
-                val member = guild.members.firstOrNull {
-                    it.id.value.toString() == messageContent.substring(memberMatcher.start() + 2, memberMatcher.end() - 1)
-                }
 
-                // Make sure the member exists.
-                if (member != null) {
-                    var newValue = "@${member.displayName}"
-
-                    if (highlightMentions) {
-                        val colorCode = getLastColorCode(messageContent.substring(0, memberMatcher.start()))
-                        val color = helpers.darkenColor(helpers.getColor(colorCode), 1)
-                        val highlightColorCode = String.format("&#%02x%02x%02x", color.red, color.green, color.blue)
-
-                        // Add a highlight onto the mention.
-                        newValue = "$highlightColorCode$newValue$colorCode"
-                    }
-
-                    messageContent = messageContent.replace(messageContent.substring(memberMatcher.start(), memberMatcher.end()), newValue)
-                    memberMatcher = memberPattern.matcher(messageContent)
-                }
-            }
-
-            val rolePattern = Pattern.compile("<@&[0-9]{17,20}>") // Pattern for guild roles.
-            var roleMatcher = rolePattern.matcher(messageContent)
-            while (roleMatcher.find()) {
-                val role = guild.roles.firstOrNull {
-                    it.id.value.toString() == messageContent.substring(roleMatcher.start() + 3, roleMatcher.end() -1)
-                }
-
-                // Make sure the role exists.
-                if (role != null) {
-                    messageContent = messageContent.replace(messageContent.substring(roleMatcher.start(), roleMatcher.end()), "@${role.name}")
-                    roleMatcher = rolePattern.matcher(messageContent)
-                }
-            }
-
-            val channelPattern = Pattern.compile("<#[0-9]{17,20}>") // Pattern for text and voice channels.
-            var channelMatcher = channelPattern.matcher(messageContent)
-            while (channelMatcher.find()) {
-                val channel = guild.channels.firstOrNull {
-                    it.id.value.toString() == messageContent.substring(channelMatcher.start() + 2, channelMatcher.end() - 1)
-                }
-
-                // Make sure the channel exists.
-                if (channel != null) {
-                    val icon =
-                        if (channel.type == ChannelType.GuildVoice || channel.type == ChannelType.GuildStageVoice) "♪" // Channel is voice.
-                        else "#" // Channel is text.
-
-                    messageContent = messageContent.replace(messageContent.substring(channelMatcher.start(), channelMatcher.end()), "${icon}${channel.name}")
-                    channelMatcher = channelPattern.matcher(messageContent)
-                }
-            }
-
-            val emotePattern = Pattern.compile("<a?:[a-zA-Z_0-9]+:[0-9]{17,20}>") // Pattern for custom emojis.
-            var emoteMatcher = emotePattern.matcher(messageContent)
-            while (emoteMatcher.find()) {
-                if (removeEmotes) {
-                    // Remove emotes from the message.
-                    messageContent = messageContent.replace(messageContent.substring(emoteMatcher.start(), emoteMatcher.end()), "")
-                } else if (emotesEnabled) {
-                    // Replace the emote with the name of the emote.
-                    val emote = messageContent.substring(emoteMatcher.start(), emoteMatcher.end())
-                    messageContent = messageContent.replace(messageContent.substring(emoteMatcher.start(), emoteMatcher.end()), emote.substring(emote.indexOf(':'), emote.lastIndexOf(':') + 1))
-                }
-
-                emoteMatcher = emotePattern.matcher(messageContent)
-            }
-        }
-
-        // Do the same for regular emojis.
-        if (removeEmotes) {
-            messageContent = EmojiParser.removeAllEmojis(messageContent)
-        } else if (emotesEnabled) {
-            messageContent = EmojiParser.parseToAliases(messageContent)
-        }
 
         val componentBuilder = ComponentBuilder()
 
