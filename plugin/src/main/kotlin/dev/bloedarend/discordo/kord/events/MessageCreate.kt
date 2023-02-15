@@ -32,7 +32,6 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
     private val translateColorCodes = config?.getBoolean("discord.translate-color-codes") ?: false
     private val mentionsEnabled = config?.getBoolean("discord.mentions.enabled") ?: true
     private val highlightMentions = config?.getBoolean("discord.mentions.highlight") ?: true
-    private val highlightColor = config?.getString("discord.mentions.highlight-color") ?: "&#9cace5"
     private val emotesEnabled = config?.getBoolean("discord.emotes.enabled") ?: true
     private val removeEmotes = config?.getBoolean("discord.emotes.remove") ?: false
 
@@ -53,9 +52,8 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
         // TODO add default role color
 
         // TODO separate click and hover events
-        // TODO fucking comment code so i know what it does
-
-        // TODO FIX /r
+        // TODO add hover and click event for attachments
+        // TODO add hover for mention information
 
         // Get the first colored role of the user.
         val colorRole = roles.firstOrNull {
@@ -108,6 +106,14 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
         // For some reason the reset code will not reset the message, but use the latest hex code.
         // So here we'll replace it with '&f', to get the expected effect.
         messageContent = messageContent.replace("&r", "&f")
+
+        // Translate the message.
+        message =
+            if (translateColorCodes) message.replace("%message%", org.bukkit.ChatColor.translateAlternateColorCodes('&', messageContent))
+            else {
+                // Remove all codes from the message.
+                message.replace("%message%", messageContent.replace(Regex("&(([a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O)|(#[a-fA-F0-9]{6}))"), ""))
+            }
 
         if (mentionsEnabled) {
             val memberPattern = Pattern.compile("<@[0-9]{17,20}>") // Pattern for discord members.
@@ -189,14 +195,6 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
         } else if (emotesEnabled) {
             messageContent = EmojiParser.parseToAliases(messageContent)
         }
-
-        // Translate the message.
-        message =
-            if (translateColorCodes) message.replace("%message%", org.bukkit.ChatColor.translateAlternateColorCodes('&', messageContent))
-            else {
-                // Remove all codes from the message.
-                message.replace("%message%", messageContent.replace(Regex("&(([a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O)|(#[a-fA-F0-9]{6}))"), ""))
-            }
 
         val componentBuilder = ComponentBuilder()
 
