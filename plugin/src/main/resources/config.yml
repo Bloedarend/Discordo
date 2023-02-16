@@ -27,6 +27,7 @@ minecraft:
     enabled: true
 
     # How dark the text shadow should be.
+    # Requires 'enabled' to be set to true.
     # Type: Integer
     darkness: 3
 
@@ -54,6 +55,7 @@ minecraft:
     enabled: true
 
     # A join message won't be sent if a player has the permission 'discordo.silent.join'.
+    # Requires 'enabled' to be set to true.
     # Type: Boolean
     silent: false
 
@@ -64,6 +66,7 @@ minecraft:
     enabled: true
 
     # A leave message won't be sent if a player has the permission 'discordo.silent.leave'.
+    # Requires 'enabled' to be set to true.
     # Type: Boolean
     silent: false
 
@@ -88,8 +91,20 @@ discord:
     enabled: true
 
     # Add color to highlight the mentions like Discord.
+    # Requires 'enabled' to be set to true.
     # Type: Boolean
     highlight: true
+
+    member:
+      hover: true
+      click: true
+
+    role:
+      hover: true
+
+    channel:
+      hover: true
+      click: true
 
   emotes:
     # Display emotes like :emote:.
@@ -98,6 +113,7 @@ discord:
     enabled: true
 
     # Remove emotes from messages completely.
+    # Requires 'enabled' to be set to true.
     # Type: Boolean
     remove: false
 
