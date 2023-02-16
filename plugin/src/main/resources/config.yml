@@ -84,6 +84,14 @@ discord:
   # Type: Boolean
   translate-color-codes: false
 
+  # Display text when a player hovers over the discord member's username.
+  # Type: Boolean
+  hover: true
+
+  # Copy the discord member's tag to clipboard when a player clicks on their username.
+  # Type: Boolean
+  click: true
+
   mentions:
     # Display mentions of users, channels and roles like Discord.
     # Normally they would look something like <@123456789012345678>.
@@ -96,14 +104,26 @@ discord:
     highlight: true
 
     member:
+      # Display text when a player hovers over a mentioned discord member.
+      # Type: Boolean
       hover: true
+
+      # Copy the discord member's tag to clipboard when a player clicks on a mentioned discord member.
+      # Type: Boolean
       click: true
 
     role:
+      # Display text when a player hovers over a mentioned role.
+      # Type: Boolean
       hover: true
 
     channel:
+      # Display text when a player clicks on a mentioned channel.
+      # Type: Boolean
       hover: true
+
+      # Open a link to the channel when a player clicks on a mentioned channel.
+      # Type: Boolean
       click: true
 
   emotes:

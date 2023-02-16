@@ -6,8 +6,10 @@ import dev.bloedarend.discordo.plugin.utils.Configs
 import dev.bloedarend.discordo.plugin.utils.Helpers
 import dev.bloedarend.discordo.plugin.utils.Messages
 import dev.kord.common.Color
+import dev.kord.common.DiscordTimestampStyle
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Snowflake
+import dev.kord.common.toMessageFormat
 import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Member
@@ -159,10 +161,13 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
                             messageSplit.add(Triple(contentToSplit.substring(0, matcher.start()), null, null))
                         }
 
+                        val hoverMember = messages.getMessage("discord.hover-member", null, *getMemberPlaceholders(mentionedMember))
+
                         val hoverEvent =
                             if (memberHoverEnabled) {
-                                HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(getComponents(messages.getMessage("discord.hover-member", null, *getMemberPlaceholders(mentionedMember)), ComponentBuilder()).create()))
+                                HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(getComponents(hoverMember, ComponentBuilder()).create()))
                             } else null
+
                         val clickEvent =
                             if (memberClickEnabled) {
                                 ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, mentionedMember.tag)
@@ -188,46 +193,39 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
                         index += matcher.end()
 
                         if (matcher.start() > 0) {
-                            messageSplit.add(Pair(contentToSplit.substring(0, matcher.start()), "none"))
+                            messageSplit.add(Triple(contentToSplit.substring(0, matcher.start()), null, null))
                         }
 
-                        messageSplit.add(Pair(contentToSplit.substring(matcher.start(), matcher.end()), "channel"))
+                        val hoverChannel = messages.getMessage("discord.hover-channel", null, *arrayOf(
+                            Pair("%channel_name", channel.name),
+                            Pair("%channel_description", channel.data.topic.value ?: "Empty")
+                        ))
+
+                        val hoverEvent =
+                            if (channelHoverEnabled) {
+                                HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(getComponents(hoverChannel, ComponentBuilder()).create()))
+                            } else null
+
+                        val clickEvent =
+                            if (channelClickEnabled) {
+                                ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.com/channels/${guild.id.value}/${channel.id.value}")
+                            } else null
+
+                        messageSplit.add(Triple(contentToSplit.substring(matcher.start(), matcher.end()), hoverEvent, clickEvent))
 
                         contentToSplit = contentToSplit.substring(matcher.end())
                         matcher = pattern.matcher(contentToSplit)
                     }
                 }
 
-                messageSplit.add(Pair(contentToSplit, "none"))
+                messageSplit.add(Triple(contentToSplit, null, null))
             }
 
         }
 
         var componentBuilder = ComponentBuilder()
-        var format = messages.getMessage("discord.format", null, *placeholders)
+        var format = messages.getMessage("discord.format", null, *getMemberPlaceholders(member))
         val formatSplit = ArrayList<String>()
-
-        val hoverPlaceholders = arrayOf(
-            Pair("%member_name%", member.username),
-            Pair("%member_displayname%", member.displayName),
-            Pair("%member_tag%", member.tag),
-            Pair("%member_roles%", memberRoles.toList().joinToString(messages.getMessage("discord.member-roles.separator"))),
-            Pair("%role_name%", roleName),
-            Pair("%role_color%", String.format("&#%02x%02x%02x", roleColor.red, roleColor.green, roleColor.blue)),
-            Pair("%message%", content)
-        )
-
-        val hoverMember = messages.getMessage("discord.hover-member", null, *getMemberPlaceholders(member))
-
-        val hoverChannel = messages.getMessage("discord.hover-channel", null, *arrayOf(
-            Pair("%member_name%", member.username),
-            Pair("%member_displayname%", member.displayName),
-            Pair("%member_tag%", member.tag),
-            Pair("%member_roles%", memberRoles.toList().joinToString(messages.getMessage("discord.member-roles.separator"))),
-            Pair("%role_name%", roleName),
-            Pair("%role_color%", String.format("&#%02x%02x%02x", roleColor.red, roleColor.green, roleColor.blue)),
-            Pair("%message%", content)
-        ))
 
         // Split message for hover and click events.
         val pattern = Pattern.compile("%((member_name)|(member_displayname)|(member_tag)|(message))%")
@@ -249,81 +247,31 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
         // Update the component builder and give it hover and click events.
         formatSplit.forEach { string ->
             if (string.matches(Regex("%member_((name)|(display_name)|(tag))%"))) { // Give member hover.
-                val hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(getComponents(hoverMember, ComponentBuilder()).create()))
-                val clickEvent = ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, member.tag)
+                val hoverMember = messages.getMessage("discord.hover-member", null, *getMemberPlaceholders(member))
+                    .replace("%message_date%", message.timestamp.toMessageFormat(DiscordTimestampStyle.LongDateTime))
+
+                val hoverEvent =
+                    if (mainHoverEnabled) {
+                        HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(getComponents(hoverMember, ComponentBuilder()).create()))
+                    } else null
+
+                val clickEvent =
+                    if (mainClickEnabled) {
+                        ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, member.tag)
+                    } else null
 
                 componentBuilder = getComponents(string, componentBuilder, hoverEvent, clickEvent)
             } else if (string.matches(Regex("%message%"))) { // Replace message with content.
-                messageSplit.forEach { pair ->
-                    when (pair.second) {
-                        "role" -> {
-                            componentBuilder = getComponents(pair.first, componentBuilder, hoverEvent)
-                        }
-                        "member" -> {
-                            componentBuilder = getComponents(pair.first, componentBuilder, hoverEvent, clickEvent)
-                        }
-                        "channel" -> {
-                            val hoverEvent =
-                                if (channelHoverEnabled) {
-                                    HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(getComponents(hoverMember, ComponentBuilder()).create()))
-                                } else null
-                            val clickEvent =
-                                if (channelClickEnabled) {
-                                    ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, member.tag)
-                                } else null
-
-                            componentBuilder = getComponents(pair.first, componentBuilder, hoverEvent, clickEvent)
-                        }
-                        else -> {
-                            componentBuilder = getComponents(pair.first, componentBuilder)
-                        }
-                    }
+                messageSplit.forEach { triple ->
+                    componentBuilder = getComponents(triple.first, componentBuilder, triple.second, triple.third)
                 }
+            } else {
+                componentBuilder = getComponents(string, componentBuilder)
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        val hover = messages.getMessage("discord.hover", null, *placeholders)
-
-
-        // We have a format with unedited stuff
-        // Then we will split the message on placeholders
-        // Then we will get append separate basecomponents with each their own hover event and click event
-        // THen we will send that
-
-
-
-        // TODO use pair list to differentiate between mention and attachment and other stuff.
-
-        val components = ArrayList<BaseComponent>()
-
-
-
-        val prefixComponents = getComponents(format.substring(0, format.indexOf("%message%")))
-        val suffixComponents = getComponents(format.substring(format.indexOf("%message%")))
-
-        prefixComponents.forEach {
-            it.hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(getComponents(hover)))
-            it.clickEvent = ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.com/channels/${message.getGuild().id.value}/${message.channelId.value}/${message.id.value}")
-        }
-
-        val broadcast = (components as MutableList<BaseComponent>).map { it }.toTypedArray()
-
-        plugin.server.spigot().broadcast(*broadcast)
+        // Send the message to everyone one the server.
+        plugin.server.spigot().broadcast(*componentBuilder.create())
     }
 
     private fun getComponents(string: String, componentBuilder: ComponentBuilder, hoverEvent: HoverEvent? = null, clickEvent: ClickEvent? = null) : ComponentBuilder {
@@ -340,7 +288,18 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
         // Append a new component every time a hex code is found.
         while (matcher.find()) {
             componentBuilder.append(message.substring(0, matcher.start()))
-            if (color.isNotEmpty()) componentBuilder.currentComponent.color = ChatColor.of(color)
+
+            if (color.isNotEmpty()) {
+                componentBuilder.currentComponent.color = ChatColor.of(color)
+            }
+
+            if (hoverEvent != null) {
+                componentBuilder.currentComponent.hoverEvent = hoverEvent
+            }
+
+            if (clickEvent != null) {
+                componentBuilder.currentComponent.clickEvent = clickEvent
+            }
 
             color = message.substring(matcher.start() + 1, matcher.end())
             message = message.substring(matcher.end())
@@ -349,7 +308,18 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
 
         // Append the remainder of the message.
         componentBuilder.append(message)
-        if (color.isNotEmpty()) componentBuilder.currentComponent.color = ChatColor.of(color)
+
+        if (color.isNotEmpty()) {
+            componentBuilder.currentComponent.color = ChatColor.of(color)
+        }
+
+        if (hoverEvent != null) {
+            componentBuilder.currentComponent.hoverEvent = hoverEvent
+        }
+
+        if (clickEvent != null) {
+            componentBuilder.currentComponent.clickEvent = clickEvent
+        }
 
         return componentBuilder
     }
@@ -386,45 +356,6 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
             Pair("%role_name%", roleName),
             Pair("%role_color%", String.format("&#%02x%02x%02x", roleColor.red, roleColor.green, roleColor.blue))
         )
-    }
-
-    private fun getComponentss(string: String, content: String, guild: Guild): Array<BaseComponent> {
-        var message = string
-        var messageContent = content
-
-        // For some reason the reset code will not reset the message, but use the latest hex code.
-        // So here we'll replace it with '&f', to get the expected effect.
-        messageContent = messageContent.replace("&r", "&f")
-
-        // Translate the message.
-        message =
-            if (translateColorCodes) message.replace("%message%", org.bukkit.ChatColor.translateAlternateColorCodes('&', messageContent))
-            else {
-                // Remove all codes from the message.
-                message.replace("%message%", messageContent.replace(Regex("&(([a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O)|(#[a-fA-F0-9]{6}))"), ""))
-            }
-
-
-
-        val componentBuilder = ComponentBuilder()
-
-        val pattern = Pattern.compile("&#[a-fA-F0-9]{6}")
-        var matcher = pattern.matcher(message)
-        var color = ""
-
-        while (matcher.find()) {
-            componentBuilder.append(message.substring(0, matcher.start()))
-            if (color.isNotEmpty()) componentBuilder.currentComponent.color = ChatColor.of(color)
-
-            color = message.substring(matcher.start() + 1, matcher.end())
-            message = message.substring(matcher.end())
-            matcher = pattern.matcher(message)
-        }
-
-        componentBuilder.append(message)
-        if (color.isNotEmpty()) componentBuilder.currentComponent.color = ChatColor.of(color)
-
-        return componentBuilder.create()
     }
 
     private fun getLastColorCode(string: String) : String {

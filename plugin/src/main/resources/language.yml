@@ -17,15 +17,17 @@ minecraft:
 
 discord:
   # The format in which Discord messages will be shown in Minecraft.
-  # Valid placeholders are: %member_name%, %member_displayname%, %member_tag%, %member_roles%, %role_name%, %role_color%, %message%
+  # Valid placeholders are: %member_name%, %member_displayname%, %member_tag%,%member_roles%,  %role_name%, %role_color%, %message%
   format: "&x[&#5865F2&lDISCORD&x] %role_color%%member_displayname%&x: &z%message%"
 
-  # The hover that appears when a player hovers over the discord member's username or a mentioned user.
+  # The hover that appears when a player hovers over the discord member's username.
   # The %role_name% placeholder will return the name of the highest role the member has with the setting 'Display separately' enabled.
   # The %role_color% placeholder will return the color of the highest role the member has with a defined color. Invisible roles are ignored.
-  # Valid placeholders are: %member_name%, %member_displayname%, %member_tag%, %member_roles%, %role_name%, %role_color%
-  hover-member:
+  # Valid placeholders are: %member_name%, %member_displayname%, %member_tag%, %member_roles%, %role_name%, %role_color%, %message_date%
+  hover:
     - "&x&lUser information"
+    - "&x %prefix% &yDate: &z%message_date%"
+    - ""
     - "&x %prefix% &yTag: &z%member_tag%"
     - "&x %prefix% &yRoles: &z%member_roles%"
     - ""
@@ -38,19 +40,31 @@ discord:
     format: "%current_role_color%%current_role_name%"
     separator: "&z, "
 
-  # The hover that appears when a player hovers over a channel mention.
-  # Valid placeholders are: %channel_name%
-  hover-channel:
-    - "&x&lChannel information"
-    - "&x %prefix% &yName: &z%channel_name%"
-    - ""
-    - "&y(Click to go to channel)"
+  mentions:
+    # The hover that appears when a player hovers over a member mention.
+    # Valid placeholders are: %member_name%, %member_displayname%, %member_tag%, %member_roles%, %role_name%, %role_color%, %message_date%
+    hover-member:
+      - "&x&lUser information"
+      - "&x %prefix% &yTag: &z%member_tag%"
+      - "&x %prefix% &yRoles: &z%member_roles%"
+      - ""
+      - "&y(Click to copy tag)"
 
-  # The hover that appears when a player hovers over a role mention.
-  # Valid placeholders are: %role_name%, %role_color%
-  hover-role:
-    - "&x&lRole information"
-    - "&x %prefix% &yName: &z%role_color%%role_name"
+    # The hover that appears when a player hovers over a channel mention.
+    # Valid placeholders are: %channel_name%, %channel description%
+    hover-channel:
+      - "&x&lChannel information"
+      - "&x %prefix% &yName: &z%channel_name%"
+      - "&x %prefix% &yDescription: &z%channel_description%"
+      - ""
+      - "&y(Click to go to channel)"
+
+    # The hover that appears when a player hovers over a role mention.
+    # Valid placeholders are: %role_name%, %role_color%
+    hover-role:
+      - "&x&lRole information"
+      - "&x %prefix% &yName: &z%role_color%%role_name"
+
 
 exceptions:
   incorrect-usage: "&4%prefix% &cIncorrect usage! &4/%usage%&c."
