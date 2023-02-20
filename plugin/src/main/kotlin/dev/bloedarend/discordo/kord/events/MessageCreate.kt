@@ -1,29 +1,25 @@
 package dev.bloedarend.discordo.kord.events
 
 import com.vdurmont.emoji.EmojiParser
-import dev.bloedarend.discordo.kord.Bot
 import dev.bloedarend.discordo.plugin.utils.Configs
 import dev.bloedarend.discordo.plugin.utils.Helpers
 import dev.bloedarend.discordo.plugin.utils.Messages
-import dev.kord.common.Color
 import dev.kord.common.DiscordTimestampStyle
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Snowflake
 import dev.kord.common.toMessageFormat
-import dev.kord.core.behavior.getChannelOfOrNull
-import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Member
-import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import net.md_5.bungee.api.ChatColor
-import net.md_5.bungee.api.chat.BaseComponent
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
+import net.md_5.bungee.api.chat.TextComponent
 import net.md_5.bungee.api.chat.hover.content.Text
 import org.bukkit.plugin.Plugin
+import java.awt.Color
 import java.util.regex.Pattern
 
 class MessageCreate(private val plugin: Plugin, configs: Configs, private val messages: Messages, private val helpers: Helpers) {
@@ -45,9 +41,12 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
     private val emotesEnabled = config?.getBoolean("discord.emotes.enabled") ?: true
     private val removeEmotes = config?.getBoolean("discord.emotes.remove") ?: false
 
+    private var componentColor = Color(255, 255, 255)
+    private var componentStyles = ""
+
     suspend fun onMessageCreate(event: MessageCreateEvent) {
         val message = event.message
-        val messageSplit = ArrayList<Triple<String, HoverEvent?, ClickEvent?>>() // We have this so we can split the message into components with different hover and click events.
+        val messageSplit = ArrayList<Triple<String, HoverEvent?, ClickEvent?>>() // We have this, so we can split the message into components with different hover and click events.
 
         if (!enabled) return
         if (message.author?.isBot == true) return // We don't want to listen to bots.
@@ -58,6 +57,10 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
 
         val member = message.getAuthorAsMember() ?: return
         val guild = member.guild.asGuild()
+
+        // Reset the component properties.
+        componentColor = Color(255, 255, 255)
+        componentStyles = ""
 
         // Determine whether to translate color codes in the message or not.
         var content =
@@ -95,25 +98,27 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
                 }
         }
 
+        var contentToSplit = content
+        var index = 0
+
         // Display and highlight mentions.
         if (mentionsEnabled) {
-            var contentToSplit = content
-            var index = 0
-
-            val pattern = Pattern.compile("<((@&?)|#)[0-9]{17,20}>") // Pattern for mentions
+            val pattern = Pattern.compile("<((@#?)|#)[0-9]{17,20}>") // Pattern for mentions
             var matcher = pattern.matcher(contentToSplit)
 
             while (matcher.find()) {
                 val mention = content.substring(matcher.start(), matcher.end())
 
-                if (mention.contains("@&")) { // Mention is a role.
+                if (mention.contains("@#")) { // Mention is a role.
                     val role = guild.roles.firstOrNull {
                         it.id.value.toString() == content.substring(matcher.start() + 3, matcher.end() -1)
                     }
 
                     // Make sure the role exists.
                     if (role != null) {
-                        content = content.replace(content.substring(index + matcher.start(), index + matcher.end()), "@${role.name}")
+                        val newValue = "@${role.name}"
+
+                        content = content.replace(content.substring(index + matcher.start(), index + matcher.end()), newValue)
                         index += matcher.end()
 
                         if (matcher.start() > 0) {
@@ -121,17 +126,18 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
                         }
 
                         val color = role.color
-                        val hoverRole = messages.getMessage("discord.hover-role", null, *arrayOf(
+                        val hoverRole = messages.getMessage("discord.mentions.hover-role", null, *arrayOf(
                             Pair("%role_name%", role.name),
                             Pair("%role_color%", String.format("&#%02x%02x%02x", color.red, color.green, color.blue))
                         ))
 
                         val hoverEvent =
                             if (roleHoverEnabled) {
-                                HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(getComponents(hoverRole, ComponentBuilder()).create()))
+                                val componentBuilder = ComponentBuilder().append(getComponent(hoverRole, TextComponent(""))).create()
+                                HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(componentBuilder))
                             } else null
 
-                        messageSplit.add(Triple(contentToSplit.substring(matcher.start(), matcher.end()), hoverEvent, null))
+                        messageSplit.add(Triple(newValue, hoverEvent, null))
 
                         contentToSplit = contentToSplit.substring(matcher.end())
                         matcher = pattern.matcher(contentToSplit)
@@ -161,11 +167,12 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
                             messageSplit.add(Triple(contentToSplit.substring(0, matcher.start()), null, null))
                         }
 
-                        val hoverMember = messages.getMessage("discord.hover-member", null, *getMemberPlaceholders(mentionedMember))
+                        val hoverMember = messages.getMessage("discord.mentions.hover-member", null, *getMemberPlaceholders(mentionedMember))
 
                         val hoverEvent =
                             if (memberHoverEnabled) {
-                                HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(getComponents(hoverMember, ComponentBuilder()).create()))
+                                val componentBuilder = ComponentBuilder().append(getComponent(hoverMember, TextComponent(""))).create()
+                                HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(componentBuilder))
                             } else null
 
                         val clickEvent =
@@ -173,7 +180,7 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
                                 ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, mentionedMember.tag)
                             } else null
 
-                        messageSplit.add(Triple(contentToSplit.substring(matcher.start(), matcher.end()), hoverEvent, clickEvent))
+                        messageSplit.add(Triple(newValue, hoverEvent, clickEvent))
 
                         contentToSplit = contentToSplit.substring(matcher.end())
                         matcher = pattern.matcher(contentToSplit)
@@ -189,21 +196,24 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
                             if (channel.type == ChannelType.GuildVoice || channel.type == ChannelType.GuildStageVoice) "♪" // Channel is voice.
                             else "#" // Channel is text.
 
-                        content = content.replace(content.substring(index + matcher.start(), index + matcher.end()), "${icon}${channel.name}")
+                        val newValue = "${icon}${channel.name}"
+
+                        content = content.replace(content.substring(index + matcher.start(), index + matcher.end()), newValue)
                         index += matcher.end()
 
                         if (matcher.start() > 0) {
                             messageSplit.add(Triple(contentToSplit.substring(0, matcher.start()), null, null))
                         }
 
-                        val hoverChannel = messages.getMessage("discord.hover-channel", null, *arrayOf(
+                        val hoverChannel = messages.getMessage("discord.mentions.hover-channel", null, *arrayOf(
                             Pair("%channel_name", channel.name),
                             Pair("%channel_description", channel.data.topic.value ?: "Empty")
                         ))
 
                         val hoverEvent =
                             if (channelHoverEnabled) {
-                                HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(getComponents(hoverChannel, ComponentBuilder()).create()))
+                                val componentBuilder = ComponentBuilder().append(getComponent(hoverChannel, TextComponent(""))).create()
+                                HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(componentBuilder))
                             } else null
 
                         val clickEvent =
@@ -211,21 +221,25 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
                                 ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.com/channels/${guild.id.value}/${channel.id.value}")
                             } else null
 
-                        messageSplit.add(Triple(contentToSplit.substring(matcher.start(), matcher.end()), hoverEvent, clickEvent))
+                        messageSplit.add(Triple(newValue, hoverEvent, clickEvent))
 
                         contentToSplit = contentToSplit.substring(matcher.end())
                         matcher = pattern.matcher(contentToSplit)
                     }
                 }
-
-                messageSplit.add(Triple(contentToSplit, null, null))
             }
-
         }
 
-        var componentBuilder = ComponentBuilder()
-        var format = messages.getMessage("discord.format", null, *getMemberPlaceholders(member))
+        messageSplit.add(Triple(contentToSplit, null, null))
+
+        var component = TextComponent("")
+        val roleColor = getMemberColor(member)
         val formatSplit = ArrayList<String>()
+        var format = messages.getMessage("discord.format", null,
+            Pair("%member_roles%", getMemberRoles(member).toList().joinToString(messages.getMessage("discord.member-roles.separator"))),
+            Pair("%role_name%", getMemberRole(member)),
+            Pair("%role_color%", String.format("&#%02x%02x%02x", roleColor.red, roleColor.green, roleColor.blue))
+        )
 
         // Split message for hover and click events.
         val pattern = Pattern.compile("%((member_name)|(member_displayname)|(member_tag)|(message))%")
@@ -246,13 +260,14 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
 
         // Update the component builder and give it hover and click events.
         formatSplit.forEach { string ->
-            if (string.matches(Regex("%member_((name)|(display_name)|(tag))%"))) { // Give member hover.
-                val hoverMember = messages.getMessage("discord.hover-member", null, *getMemberPlaceholders(member))
+            if (string.matches(Regex("%member_((name)|(displayname)|(tag))%"))) { // Give member hover.
+                val hoverMember = messages.getMessage("discord.hover", null, *getMemberPlaceholders(member))
                     .replace("%message_date%", message.timestamp.toMessageFormat(DiscordTimestampStyle.LongDateTime))
 
                 val hoverEvent =
                     if (mainHoverEnabled) {
-                        HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(getComponents(hoverMember, ComponentBuilder()).create()))
+                        val componentBuilder = ComponentBuilder().append(getComponent(hoverMember, TextComponent(""))).create()
+                        HoverEvent(HoverEvent.Action.SHOW_TEXT, Text(componentBuilder))
                     } else null
 
                 val clickEvent =
@@ -260,102 +275,127 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
                         ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, member.tag)
                     } else null
 
-                componentBuilder = getComponents(string, componentBuilder, hoverEvent, clickEvent)
+                val newValue = when (string) {
+                    "%member_name" -> {
+                        member.username
+                    }
+                    "%member_displayname%" -> {
+                        member.displayName
+                    }
+                    "%member_tag%" -> {
+                        member.tag
+                    }
+                    else -> ""
+                }
+
+                component = getComponent(newValue, component, hoverEvent, clickEvent)
             } else if (string.matches(Regex("%message%"))) { // Replace message with content.
                 messageSplit.forEach { triple ->
-                    componentBuilder = getComponents(triple.first, componentBuilder, triple.second, triple.third)
+                    component = getComponent(triple.first, component, triple.second, triple.third)
                 }
             } else {
-                componentBuilder = getComponents(string, componentBuilder)
+                component = getComponent(string, component)
             }
         }
 
         // Send the message to everyone one the server.
-        plugin.server.spigot().broadcast(*componentBuilder.create())
+        plugin.server.spigot().broadcast(component)
     }
 
-    private fun getComponents(string: String, componentBuilder: ComponentBuilder, hoverEvent: HoverEvent? = null, clickEvent: ClickEvent? = null) : ComponentBuilder {
-        var message = string
-
-        // For some reason the reset code will not reset the message, but use the latest hex code.
+    private fun getComponent(string: String, textComponent: TextComponent, hoverEvent: HoverEvent? = null, clickEvent: ClickEvent? = null) : TextComponent {
+        // The reset code will not default to white, but use the latest component color.
         // So here we'll replace it with '&f', to get the expected effect.
-        message = message.replace("&r", "&f")
+        var message = componentStyles + string.replace("&r", "&f").replace("&R", "&f")
 
-        val pattern = Pattern.compile("&#[a-fA-F0-9]{6}")
+        val pattern = Pattern.compile("&(([a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O)|(#[a-fA-F0-9]{6}))")
         var matcher = pattern.matcher(message)
-        var color = ""
 
-        // Append a new component every time a hex code is found.
+        // Add a new component every time a hex code is found.
         while (matcher.find()) {
-            componentBuilder.append(message.substring(0, matcher.start()))
+            val component = TextComponent(message.substring(0, matcher.start()))
 
-            if (color.isNotEmpty()) {
-                componentBuilder.currentComponent.color = ChatColor.of(color)
-            }
+            component.color = ChatColor.of(componentColor)
 
             if (hoverEvent != null) {
-                componentBuilder.currentComponent.hoverEvent = hoverEvent
+                component.hoverEvent = hoverEvent
             }
 
             if (clickEvent != null) {
-                componentBuilder.currentComponent.clickEvent = clickEvent
+                component.clickEvent = clickEvent
             }
 
-            color = message.substring(matcher.start() + 1, matcher.end())
+            textComponent.addExtra(component)
+
+            componentColor = helpers.getColor(message.substring(matcher.start(), matcher.end()))
             message = message.substring(matcher.end())
             matcher = pattern.matcher(message)
         }
 
-        // Append the remainder of the message.
-        componentBuilder.append(message)
+        // Add the remainder of the message.
+        val component = TextComponent(message)
 
-        if (color.isNotEmpty()) {
-            componentBuilder.currentComponent.color = ChatColor.of(color)
-        }
+        component.color = ChatColor.of(componentColor)
+        componentColor = helpers.getColor(getLastColorCode(message))
+        componentStyles = getLastStyleCodes(string)
 
         if (hoverEvent != null) {
-            componentBuilder.currentComponent.hoverEvent = hoverEvent
+            component.hoverEvent = hoverEvent
         }
 
         if (clickEvent != null) {
-            componentBuilder.currentComponent.clickEvent = clickEvent
+            component.clickEvent = clickEvent
         }
 
-        return componentBuilder
+        textComponent.addExtra(component)
+
+        return textComponent
     }
 
     private suspend fun getMemberPlaceholders(member: Member) : Array<Pair<String, String>> {
-        val roles = member.roles.toList().sortedDescending()
+        val roleColor = getMemberColor(member)
 
-        // Get the first colored role of the user.
-        val colorRole = roles.firstOrNull {
-            it.color != Color(0x99AAB5)
-        }
+        return arrayOf(
+            Pair("%member_name%", member.username),
+            Pair("%member_displayname%", member.displayName),
+            Pair("%member_tag%", member.tag),
+            Pair("%member_roles%", getMemberRoles(member).toList().joinToString(messages.getMessage("discord.member-roles.separator"))),
+            Pair("%role_name%", getMemberRole(member)),
+            Pair("%role_color%", String.format("&#%02x%02x%02x", roleColor.red, roleColor.green, roleColor.blue))
+        )
+    }
+
+    private suspend fun getMemberRole(member: Member) : String {
+        val roles = member.roles.toList().sortedDescending()
 
         // Get the first hoisted role of the user.
         val hoistedRole = roles.firstOrNull {
             it.hoisted
         }
 
-        val roleColor = colorRole?.color ?: Color(170, 170, 170)
-        val roleName = hoistedRole?.name ?:
-        if (roles.isEmpty()) ""
-        else roles.first().name
+        return hoistedRole?.name ?: ""
+    }
 
-        val memberRoles = roles.map {
+    private suspend fun getMemberRoles(member: Member) : List<String> {
+        val roles = member.roles.toList().sortedDescending()
+
+        return roles.map {
             messages.getMessage("discord.member-roles.format", null,
                 Pair("%current_role_name%", it.name),
                 Pair("%current_role_color%", String.format("&#%02x%02x%02x", it.color.red, it.color.green, it.color.blue))
             )
         }
-        return arrayOf(
-            Pair("%member_name%", member.username),
-            Pair("%member_displayname%", member.displayName),
-            Pair("%member_tag%", member.tag),
-            Pair("%member_roles%", memberRoles.toList().joinToString(messages.getMessage("discord.member-roles.separator"))),
-            Pair("%role_name%", roleName),
-            Pair("%role_color%", String.format("&#%02x%02x%02x", roleColor.red, roleColor.green, roleColor.blue))
-        )
+    }
+
+    private suspend fun getMemberColor(member: Member) : dev.kord.common.Color {
+        val roles = member.roles.toList().sortedDescending()
+
+        // Get the first colored role of the user.
+        val colorRole = roles.firstOrNull {
+            it.color != dev.kord.common.Color(0x99AAB5)
+        }
+
+        return colorRole?.color ?: dev.kord.common.Color(170, 170, 170)
+
     }
 
     private fun getLastColorCode(string: String) : String {
@@ -369,5 +409,27 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
         }
 
         return code
+    }
+
+    private fun getLastStyleCodes(string: String) : String {
+        var message = string
+        var styles = ""
+
+        val colorPattern = Pattern.compile("&(([a-fA-F0-9]|r|R)|(#[a-fA-F0-9]{6}))")
+        var colorMatcher = colorPattern.matcher(message)
+
+        while (colorMatcher.find()) {
+            message = message.substring(colorMatcher.end()) // Update the message till the last color code has been found.
+            colorMatcher = colorPattern.matcher(message)
+        }
+
+        val stylePattern = Pattern.compile("&(k|K|l|L|m|M|n|N|o|O)")
+        val styleMatcher = stylePattern.matcher(message)
+
+        while (styleMatcher.find()) {
+            styles += message.substring(styleMatcher.start(), styleMatcher.end()) // Add style code to styles.
+        }
+
+        return styles
     }
 }
