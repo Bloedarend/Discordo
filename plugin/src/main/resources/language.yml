@@ -50,12 +50,22 @@ discord:
       - ""
       - "&y(Click to copy tag)"
 
-    # The hover that appears when a player hovers over a channel mention.
-    # Valid placeholders are: %channel_name%, %channel description%
-    hover-channel:
+    # The hover that appears when a player hovers over a text channel mention.
+    # Valid placeholders are: %channel_name%, %channel_description%
+    hover-text-channel:
       - "&x&lChannel information"
       - "&x %prefix% &yName: &z%channel_name%"
       - "&x %prefix% &yDescription: &z%channel_description%"
+      - ""
+      - "&y(Click to go to channel)"
+
+
+    # The hover that appears when a player hovers over a voice channel mention.
+    # Valid placeholders are: %channel_name%, %channel_connected%, %channel_max%
+    hover-voice-channel:
+      - "&x&lChannel information"
+      - "&x %prefix% &yName: &z%channel_name%"
+      - "&x %prefix% &yConnected: &z%channel_connected%/%channel_max%"
       - ""
       - "&y(Click to go to channel)"
 

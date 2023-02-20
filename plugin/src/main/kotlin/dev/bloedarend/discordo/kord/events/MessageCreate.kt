@@ -116,7 +116,16 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
 
                     // Make sure the role exists.
                     if (role != null) {
-                        val newValue = "@${role.name}"
+                        var newValue = "@${role.name}"
+
+                        if (highlightMentions) {
+                            val colorCode = getLastColorCode(content.substring(0, matcher.start()))
+                            val color = helpers.darkenColor(helpers.getColor(colorCode), 1)
+                            val highlightColorCode = String.format("&#%02x%02x%02x", color.red, color.green, color.blue)
+
+                            // Add a highlight onto the mention.
+                            newValue = "$highlightColorCode$newValue$colorCode"
+                        }
 
                         content = content.replace(content.substring(index + matcher.start(), index + matcher.end()), newValue)
                         index += matcher.end()
@@ -192,11 +201,24 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
 
                     // Make sure the channel exists.
                     if (channel != null) {
-                        val icon =
-                            if (channel.type == ChannelType.GuildVoice || channel.type == ChannelType.GuildStageVoice) "♪" // Channel is voice.
-                            else "#" // Channel is text.
+                        var icon = "#"
+                        var path = "discord.mentions.hover-text-channel"
 
-                        val newValue = "${icon}${channel.name}"
+                        if (channel.type == ChannelType.GuildVoice || channel.type == ChannelType.GuildStageVoice) {
+                            icon = "♪"
+                            path = "discord.mentions.hover-voice-channel"
+                        }
+
+                        var newValue = "${icon}${channel.name}"
+
+                        if (highlightMentions) {
+                            val colorCode = getLastColorCode(content.substring(0, matcher.start()))
+                            val color = helpers.darkenColor(helpers.getColor(colorCode), 1)
+                            val highlightColorCode = String.format("&#%02x%02x%02x", color.red, color.green, color.blue)
+
+                            // Add a highlight onto the mention.
+                            newValue = "$highlightColorCode$newValue$colorCode"
+                        }
 
                         content = content.replace(content.substring(index + matcher.start(), index + matcher.end()), newValue)
                         index += matcher.end()
@@ -205,7 +227,7 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
                             messageSplit.add(Triple(contentToSplit.substring(0, matcher.start()), null, null))
                         }
 
-                        val hoverChannel = messages.getMessage("discord.mentions.hover-channel", null, *arrayOf(
+                        val hoverChannel = messages.getMessage(path, null, *arrayOf(
                             Pair("%channel_name", channel.name),
                             Pair("%channel_description", channel.data.topic.value ?: "Empty")
                         ))
