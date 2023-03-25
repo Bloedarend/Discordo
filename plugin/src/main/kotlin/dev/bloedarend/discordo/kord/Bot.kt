@@ -3,6 +3,7 @@ package dev.bloedarend.discordo.kord
 import dev.bloedarend.discordo.kord.events.MessageCreate
 import dev.bloedarend.discordo.plugin.utils.Configs
 import dev.bloedarend.discordo.plugin.utils.Helpers
+import dev.bloedarend.discordo.plugin.utils.Images
 import dev.bloedarend.discordo.plugin.utils.Messages
 import dev.kord.core.Kord
 import dev.kord.core.event.message.MessageCreateEvent
@@ -10,17 +11,18 @@ import dev.kord.core.exception.KordInitializationException
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import io.ktor.client.request.forms.*
+import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.flow.*
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.plugin.Plugin
 
-class Bot(private val plugin: Plugin, configs: Configs, messages: Messages, helpers: Helpers) {
+class Bot(private val plugin: Plugin, configs: Configs, messages: Messages, helpers: Helpers, images: Images) {
 
     var client: Kord? = null
     private val token = configs.getConfig("token")?.getString("token")
 
-    private val messageCreate = MessageCreate(plugin, configs, messages, helpers)
-
+    private val messageCreate = MessageCreate(plugin, configs, messages, helpers, images)
     suspend fun start() {
         initialize()
 
@@ -51,10 +53,13 @@ class Bot(private val plugin: Plugin, configs: Configs, messages: Messages, help
         }
     }
 
+    @OptIn(PrivilegedIntent::class)
     private suspend fun login() {
         client!!.login {
             @OptIn(PrivilegedIntent::class)
             intents += Intent.MessageContent
+            intents += Intent.GuildVoiceStates
+            intents += Intent.GuildMembers
         }
     }
 

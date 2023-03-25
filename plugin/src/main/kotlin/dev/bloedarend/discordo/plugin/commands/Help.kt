@@ -19,8 +19,9 @@ class Help(configs: Configs, private val messages: Messages) {
     @Usage("dco help")
     fun onCommand(sender: CommandSender) {
         val commands: List<Pair<String, String>> = listOf(
-            Pair("pvpm help", messages.getMessage("commands.help.description", sender)),
-            Pair("pvpm reload", messages.getMessage("commands.reload.description", sender))
+            Pair("dco help", messages.getMessage("commands.help.description", sender)),
+            Pair("dco invite", messages.getMessage("commands.invite.description", sender)),
+            Pair("dco reload", messages.getMessage("commands.reload.description", sender))
         )
 
         if (useSeparator) messages.sendMessage("commands.help.separator", sender)

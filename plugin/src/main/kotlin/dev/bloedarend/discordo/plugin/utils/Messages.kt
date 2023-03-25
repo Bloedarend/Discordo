@@ -26,7 +26,7 @@ class Messages(configs: Configs) {
         for (msg in messages) sender.sendMessage(formatHexMessage(formatMessage(msg.toString(), player, *placeholders)))
     }
 
-    fun getMessage(path: String, sender: CommandSender? = null, vararg placeholders: Pair<String, String>) : String {
+    fun getMessage(path: String, sender: CommandSender? = null, vararg placeholders: Pair<String, String>): String {
         val message = config!!.getString(path)
         val messages = config.getList(path)
 
@@ -36,7 +36,7 @@ class Messages(configs: Configs) {
         else messages.map { formatMessage(it as String, player, *placeholders) }.toList().joinToString("\n")
     }
 
-    private fun formatMessage(msg: String, player: Player?, vararg placeholders: Pair<String, String>) : String {
+    private fun formatMessage(msg: String, player: Player?, vararg placeholders: Pair<String, String>): String {
         var message = msg
 
         // Replace prefix with corresponding value.
@@ -61,7 +61,7 @@ class Messages(configs: Configs) {
         return ChatColor.translateAlternateColorCodes('&', message)
     }
 
-    fun formatHexMessage(msg: String) : String {
+    fun formatHexMessage(msg: String): String {
         var message = msg
         val pattern = Pattern.compile("&#[a-fA-F0-9]{6}")
         var matcher = pattern.matcher(message)

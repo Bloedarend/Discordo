@@ -7,7 +7,7 @@ import java.util.regex.Pattern
 
 class Helpers {
 
-    fun getVersion(plugin: Plugin) : Int {
+    fun getVersion(plugin: Plugin): Int {
         // Get the first two values of the minecraft version.
         val version: Matcher = Pattern.compile("\\d+\\.\\d+").matcher(plugin.server.version)
         version.find()
@@ -25,7 +25,7 @@ class Helpers {
         return Color.decode(hex)
     }
 
-    private fun convertColorCodeToHex(colorCode: String) : String? {
+    private fun convertColorCodeToHex(colorCode: String): String? {
         return when (colorCode.lowercase()) {
             "&0" -> "&#000000"
             "&1" -> "&#0000aa"
@@ -48,7 +48,7 @@ class Helpers {
         }
     }
 
-    fun darkenColor(color: Color, amount: Int) : Color {
+    fun darkenColor(color: Color, amount: Int): Color {
         if (amount <= 1) return color.darker()
 
         return darkenColor(color.darker(), amount - 1)

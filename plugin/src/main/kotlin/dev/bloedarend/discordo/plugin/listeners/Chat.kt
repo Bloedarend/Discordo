@@ -36,7 +36,7 @@ class Chat(configs: Configs, private val bot: Bot, private val images: Images) :
 
         if (!translateColorCodes) {
             // Remove the color codes from the message.
-            message = message.replace(Regex("&([a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O)|(#[a-fA-F0-9]{6})"), "")
+            message = message.replace(Regex("&(([a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O)|(#[a-fA-F0-9]{6}))"), "")
         }
 
         val text = String.format(event.format, player.displayName.replace("${ChatColor.COLOR_CHAR}","&"), message)

@@ -41,7 +41,7 @@ class Configs(private val main: Main) {
         configFiles[location] = config
     }
 
-    fun getConfig(name: String) : YamlDocument? {
+    fun getConfig(name: String): YamlDocument? {
         return configFiles[name]
     }
 
@@ -56,9 +56,9 @@ class Configs(private val main: Main) {
         // Pass the new instance of the configs to the utils.
         main.messages = Messages(this)
         main.images = Images(main, this, main.helpers)
-        main.bot = Bot(main as Plugin, this, main.messages, main.helpers)
+        main.bot = Bot(main as Plugin, this, main.messages, main.helpers, main.images)
         main.events = Events(this, main.messages, main.bot, main.images)
-        main.commands = Commands(this, main.events, main.messages, main)
+        main.commands = Commands(this, main.events, main.messages, main, main.bot)
 
         // Start the bot.
         main.startBot(client)

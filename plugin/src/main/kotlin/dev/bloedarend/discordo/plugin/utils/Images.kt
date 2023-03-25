@@ -10,7 +10,6 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import java.util.LinkedList
 import java.util.regex.Pattern
 import javax.imageio.ImageIO
 
@@ -24,53 +23,38 @@ class Images(plugin: Plugin, configs: Configs, private val helpers: Helpers) {
     private val padding = config?.getInt("minecraft.image.padding") ?: 8
     private val width = config?.getInt("minecraft.image.width") ?: 900
     private val backgroundOpacity = config?.getFloat("minecraft.image.background-opacity") ?: 0.4F
+    private val backgroundColor = Color(0F, 0F, 0F, if (backgroundOpacity < 0) 0F else if (backgroundOpacity > 1) 1F else backgroundOpacity)
 
     private val fontSize = 30F
     private val height = (fontSize + padding * 2).toInt()
     private val maxStringWidth = width - 2 * padding
-
-    private val backgroundColor = Color(0F, 0F, 0F, backgroundOpacity)
-    private var image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
-    private var g2d: Graphics2D = image.createGraphics()
 
     private val fontRegular = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftRegular-Bmg3.ttf")).deriveFont(fontSize)
     private val fontBold = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftBold-nMK1.ttf")).deriveFont(fontSize)
     private val fontItalic = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftItalic-R8Mo.ttf")).deriveFont(fontSize)
     private val fontBoldItalic = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftBoldItalic-1y1e.ttf")).deriveFont(fontSize)
 
-    private var currentFont = fontRegular
-    private var currentColor = Color.WHITE
-    private var currentStyles = ""
-    private var currentWidth = 0
-    private var currentPosition = 0
+    fun getInputStream(message: String): InputStream {
+        var currentFont = fontRegular
+        var currentColor = Color.WHITE
+        var currentWidth = 0
+        var currentStyles = ""
+        var currentLine = ""
+        val lines = ArrayList<String>()
 
-    private var line = ""
-    private val lines = LinkedList<String>()
+        var image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        var g2d = image.createGraphics()
 
-    init {
-        initGraphics2D(g2d)
-    }
-
-    fun getInputStream(message: String) : InputStream {
-        // Reset all properties
-        currentFont = fontRegular
-        currentColor = Color.WHITE
-        currentStyles = ""
-        currentWidth = 0
-        currentPosition = 0
-        line = ""
-        lines.clear()
-        resize(1)
+        initGraphics2D(image.createGraphics(), currentFont, currentColor, image)
 
         val words = message.split(" ")
-
         words.forEach {
-            val stringWidth = getStringWidth("$it ")
+            val stringWidth = getStringWidth(g2d, "$it ")
 
             // Check if the text object should be split up, go to the next line or remain on the same line.
             if (stringWidth > maxStringWidth) {
                 // The string is too long to fit onto one line. Add the current line to the lines.
-                lines.add(line)
+                lines.add(currentLine)
 
                 val characters = it.toCharArray()
                 var style = ""
@@ -78,8 +62,8 @@ class Images(plugin: Plugin, configs: Configs, private val helpers: Helpers) {
 
                 // Loop over every character in the string to check where the string should be split up.
                 characters.forEach { character ->
-                    val textWidth = getStringWidth(newTextFormatted)
-                    val characterWidth = getStringWidth(character.toString())
+                    val textWidth = getStringWidth(g2d, newTextFormatted)
+                    val characterWidth = getStringWidth(g2d, character.toString())
 
                     if (textWidth + characterWidth > maxStringWidth) {
                         // The string is too big to fit onto one line. Add the current text to the lines.
@@ -91,23 +75,9 @@ class Images(plugin: Plugin, configs: Configs, private val helpers: Helpers) {
                     if (character == '&') {
                         // The character is an '&', which indicates a potential start of a code.
                         style = character.toString()
-                    } else if (style.contains("&")) {
-                        // The style contains a '&', which means we should look to complete this code.
-                        if (character.toString().matches(Regex("[a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O"))) {
-                            // A regular Minecraft code was found.
-                            newTextFormatted += "&$character"
-                            style = ""
-                        } else if (character == '#') {
-                            // The start of a potential hex code was found.
-                            style += character
-                        } else {
-                            // The code was not completed.
-                            newTextFormatted += style
-                            style = ""
-                        }
                     } else if (style.contains("#")) {
                         // The style contains a '#', which means we should look for a combination of 6 valid hex code characters.
-                        if (character.toString().matches(Regex("&#[0-9a-fA-F]"))) {
+                        if (character.toString().matches(Regex("[0-9a-fA-F]"))) {
                             // The current character could be part of a hex code.
                             if (style.length == 7) {
                                 // The current style is of length 7. By adding the current character, the hex code will be complete.
@@ -122,29 +92,47 @@ class Images(plugin: Plugin, configs: Configs, private val helpers: Helpers) {
                             newTextFormatted += "$style$character"
                             style = ""
                         }
+                    } else if (style.contains("&")) {
+                        // The style contains a '&', which means we should look to complete this code.
+                        if (character.toString().matches(Regex("[a-fA-F0-9]|r|R|k|K|l|L|m|M|n|N|o|O"))) {
+                            // A regular Minecraft code was found.
+                            newTextFormatted += "&$character"
+                            style = ""
+                        } else if (character == '#') {
+                            // The start of a potential hex code was found.
+                            style += character
+                        } else {
+                            // The code was not completed.
+                            newTextFormatted += style
+                            style = ""
+                        }
                     } else {
                         // The character has nothing to do with codes, so add it to the string.
                         newTextFormatted += character
                     }
 
                     // Set the remaining text to the current line.
-                    line = newTextFormatted
+                    currentLine = newTextFormatted
                 }
             } else if (stringWidth + currentWidth < maxStringWidth) {
                 // The text will be able to fit on the line just fine.
                 currentWidth += stringWidth
-                line += "$it "
+                currentLine += "$it "
             } else {
                 // The text won't fit on the current line, so put it onto the next one.
-                currentWidth = getStringWidth(" $it ")
-                lines.add(line)
-                line = " $it "
+                currentWidth = getStringWidth(g2d , " $it ")
+                lines.add(currentLine)
+                currentLine = " $it "
             }
         }
 
         // Add the remaining line to the lines.
-        lines.add(line)
-        resize(lines.size)
+        lines.add(currentLine)
+        image = resize(image, lines.size)
+        g2d = image.createGraphics()
+
+        // Create new graphics for the new image.
+        initGraphics2D(g2d, currentFont, currentColor, image)
 
         // Loop over every line and draw it.
         lines.forEachIndexed { index, it ->
@@ -160,7 +148,7 @@ class Images(plugin: Plugin, configs: Configs, private val helpers: Helpers) {
                 val code = line.substring(matcher.start(), matcher.end())
 
                 // Draw the string, then update the position.
-                drawText(text, index, position)
+                drawText(g2d, text, index, position, currentColor, currentStyles)
                 position += g2d.fontMetrics.stringWidth(text)
 
                 // Check if the code represents a color.
@@ -186,7 +174,7 @@ class Images(plugin: Plugin, configs: Configs, private val helpers: Helpers) {
             }
 
             // Draw the remaining string.
-            drawText(line.replace(Regex("\\s+$"), ""), index, position)
+            drawText(g2d, line.replace(Regex("\\s+$"), ""), index, position, currentColor, currentStyles)
         }
 
         val baos = ByteArrayOutputStream()
@@ -196,7 +184,7 @@ class Images(plugin: Plugin, configs: Configs, private val helpers: Helpers) {
         return ByteArrayInputStream(baos.toByteArray())
     }
 
-    private fun drawText(text: String, index: Int, position: Int) {
+    private fun drawText(g2d: Graphics2D, text: String, index: Int, position: Int, currentColor: Color, currentStyles: String) {
         val stringWidth = g2d.fontMetrics.stringWidth(text)
         val textShadowOffset = (fontSize / 10).toInt()
 
@@ -243,18 +231,20 @@ class Images(plugin: Plugin, configs: Configs, private val helpers: Helpers) {
         }
     }
 
-    private fun resize(lineAmount: Int) {
+    private fun resize(image: BufferedImage, lineAmount: Int): BufferedImage {
         image.flush()
-        g2d.dispose()
+
+        println(lineAmount)
+        println(fontSize)
+        println(padding)
+        println(spacing)
+        println(fontSize.toInt() + padding * 2 + (lineAmount - 1) * (fontSize + spacing).toInt())
 
         // Rescale the image according to the amount of lines.
-        image = Scalr.resize(image, Scalr.Mode.FIT_EXACT, width, fontSize.toInt() + padding * 2 + (lineAmount - 1) * (fontSize + spacing).toInt())
-        g2d = image.createGraphics()
-
-        initGraphics2D(g2d)
+        return Scalr.resize(image, Scalr.Mode.FIT_EXACT, width, fontSize.toInt() + padding * 2 + (lineAmount - 1) * (fontSize + spacing).toInt())
     }
 
-    private fun getStringWidth(string: String) : Int {
+    private fun getStringWidth(g2d: Graphics2D , string: String): Int {
         var text = string
         var styles = ""
         var stringWidth = 0
@@ -292,7 +282,7 @@ class Images(plugin: Plugin, configs: Configs, private val helpers: Helpers) {
         return stringWidth
     }
 
-    private fun getFont(styles: String) : Font {
+    private fun getFont(styles: String): Font {
         val isBold = styles.lowercase().contains("l")
         val isItalic = styles.lowercase().contains("o")
 
@@ -302,7 +292,7 @@ class Images(plugin: Plugin, configs: Configs, private val helpers: Helpers) {
             else fontRegular
     }
 
-    private fun initGraphics2D(g2d: Graphics2D) {
+    private fun initGraphics2D(g2d: Graphics2D, currentFont: Font, currentColor: Color, image: BufferedImage) {
         g2d.font = currentFont
         g2d.color = currentColor
         g2d.background = backgroundColor

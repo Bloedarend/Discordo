@@ -159,7 +159,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.parent.artifactId}-v${project.version}</finalName>
+        <finalName>${project.parent.artifactId}-${project.version}</finalName>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
         <directory>target</directory>
         <plugins>

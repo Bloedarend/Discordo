@@ -25,9 +25,10 @@ discord:
   # The %role_color% placeholder will return the color of the highest role the member has with a defined color. Invisible roles are ignored.
   # Valid placeholders are: %member_name%, %member_displayname%, %member_tag%, %member_roles%, %role_name%, %role_color%, %message_date%
   hover:
-    - "&x&lUser information"
+    - "&x&lMessage information"
     - "&x %prefix% &yDate: &z%message_date%"
     - ""
+    - "&x&lUser information"
     - "&x %prefix% &yTag: &z%member_tag%"
     - "&x %prefix% &yRoles: &z%member_roles%"
     - ""
@@ -41,6 +42,9 @@ discord:
     separator: "&z, "
 
   mentions:
+    # The icon to display in front of a member mention.
+    icon-member: "@"
+
     # The hover that appears when a player hovers over a member mention.
     # Valid placeholders are: %member_name%, %member_displayname%, %member_tag%, %member_roles%, %role_name%, %role_color%, %message_date%
     hover-member:
@@ -49,6 +53,9 @@ discord:
       - "&x %prefix% &yRoles: &z%member_roles%"
       - ""
       - "&y(Click to copy tag)"
+
+    # The icon to display in front of a text channel mention.
+    icon-text-channel: "#"
 
     # The hover that appears when a player hovers over a text channel mention.
     # Valid placeholders are: %channel_name%, %channel_description%
@@ -59,6 +66,11 @@ discord:
       - ""
       - "&y(Click to go to channel)"
 
+    # The text that should be displayed when there is no channel description.
+    no-channel-description: "Empty"
+
+    # The icon to display in front of a voice channel mention.
+    icon-voice-channel: "♪"
 
     # The hover that appears when a player hovers over a voice channel mention.
     # Valid placeholders are: %channel_name%, %channel_connected%, %channel_max%
@@ -69,12 +81,17 @@ discord:
       - ""
       - "&y(Click to go to channel)"
 
+    # The icon to display when a channel has no member limit (%channel_max%).
+    icon-no-limit: "∞"
+
+    # The icon to display in front of a role mention.
+    icon-role: "@"
+
     # The hover that appears when a player hovers over a role mention.
     # Valid placeholders are: %role_name%, %role_color%
     hover-role:
       - "&x&lRole information"
-      - "&x %prefix% &yName: &z%role_color%%role_name"
-
+      - "&x %prefix% &yName: &z%role_color%%role_name%"
 
 exceptions:
   incorrect-usage: "&4%prefix% &cIncorrect usage! &4/%usage%&c."
@@ -101,9 +118,12 @@ commands:
     line: "&x %prefix% &y/%command%: &z%command_description%"
     separator: "&x&m----------------------------------"
     use-separator: true
+  invite:
+    description: "Invite the bot to your server."
+    message: "&x&l%prefix% &yBot invite link: &z%invite%"
   reload:
     description: "Reload the plugin."
-    success: "&x%prefix% &yThe plugin was successfully reloaded! (&z%duration%ms&y)"
+    message: "&x%prefix% &yThe plugin was successfully reloaded! (&z%duration%ms&y)"
 
 # The version of this config file.
 # (!) Do not change this value.

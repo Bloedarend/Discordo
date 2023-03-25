@@ -27,7 +27,7 @@ minecraft:
     enabled: true
 
     # How dark the text shadow should be.
-    # Requires 'enabled' to be set to true.
+    # Requires 'minecraft.text-shadow.enabled' to be set to true.
     # Type: Integer
     darkness: 3
 
@@ -45,6 +45,7 @@ minecraft:
     width: 900
 
     # The opacity of the chat background in the image.
+    # This value ranges from 0 to 1.
     # Type: Float
     background-opacity: 0.4
 
@@ -55,7 +56,7 @@ minecraft:
     enabled: true
 
     # A join message won't be sent if a player has the permission 'discordo.silent.join'.
-    # Requires 'enabled' to be set to true.
+    # Requires 'minecraft.join.enabled' to be set to true.
     # Type: Boolean
     silent: false
 
@@ -66,7 +67,7 @@ minecraft:
     enabled: true
 
     # A leave message won't be sent if a player has the permission 'discordo.silent.leave'.
-    # Requires 'enabled' to be set to true.
+    # Requires 'minecraft.leave.enabled' to be set to true.
     # Type: Boolean
     silent: false
 
@@ -76,6 +77,10 @@ discord:
   # Type: Boolean
   enabled: true
 
+  # Send Discord messages to the console.
+  # Type: Boolean
+  send-to-console: true
+
   # Translate color codes in messages sent by members.
   # If true, members can use color codes in their messages.
   # If false, color codes will be removed from the player message.
@@ -83,6 +88,28 @@ discord:
   # Note that, this setting does not affect the entire chat format, but only the message sent by the member.
   # Type: Boolean
   translate-color-codes: false
+
+  # On Discord, members can type using new lines. Enable this to replace all new lines with a space, like Minecraft chat.
+  # Type: Boolean
+  remove-new-line: true
+
+  # Limit how long the message content can be. Messages that are too long will be cut off with '...'.
+  # Set this to '-1' if there should be no limit.
+  # Type: Integer
+  content-limit: 512
+
+  # Don't send a message when the message content is empty.
+  # Type: Boolean
+  ignore-empty: true
+
+  # Delete the messages sent by Discord users and replace them with an image of the Minecraft chat message.
+  # Type: Boolean
+  replace-messages: false
+
+  # The format in which the dates are displayed.
+  # Documentation for date formatting can be found here: https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+  # Type: String
+  date-format: "d MMMM yyyy, hh:mm:ss"
 
   # Display text when a player hovers over the discord member's username.
   # Type: Boolean
@@ -99,7 +126,7 @@ discord:
     enabled: true
 
     # Add color to highlight the mentions like Discord.
-    # Requires 'enabled' to be set to true.
+    # Requires 'discord.mentions.enabled' to be set to true.
     # Type: Boolean
     highlight: true
 
@@ -117,12 +144,26 @@ discord:
       # Type: Boolean
       hover: true
 
-    channel:
-      # Display text when a player clicks on a mentioned channel.
+      # Use the role as highlight color instead of the darkened chat color.
+      # Requires 'discord.mentions.highlight' to be true.
+      # Type: Boolean
+      use-role-color: false
+
+    text-channel:
+      # Display text when a player hovers over a mentioned text channel.
       # Type: Boolean
       hover: true
 
-      # Open a link to the channel when a player clicks on a mentioned channel.
+      # Open a link to the channel when a player clicks on a mentioned text channel.
+      # Type: Boolean
+      click: true
+
+    voice-channel:
+      # Display text when a player hovers over a mentioned voice channel.
+      # Type: Boolean
+      hover: true
+
+      # Open a link to the channel when a player clicks on a mentioned voice channel.
       # Type: Boolean
       click: true
 
@@ -133,7 +174,7 @@ discord:
     enabled: true
 
     # Remove emotes from messages completely.
-    # Requires 'enabled' to be set to true.
+    # Requires 'discord.emotes.enabled' to be set to true.
     # Type: Boolean
     remove: false
 

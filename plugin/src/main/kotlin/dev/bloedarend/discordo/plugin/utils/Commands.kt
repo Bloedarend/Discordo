@@ -1,8 +1,7 @@
 package dev.bloedarend.discordo.plugin.utils
 
-import dev.bloedarend.discordo.plugin.commands.Default
-import dev.bloedarend.discordo.plugin.commands.Help
-import dev.bloedarend.discordo.plugin.commands.Reload
+import dev.bloedarend.discordo.kord.Bot
+import dev.bloedarend.discordo.plugin.commands.*
 import org.bukkit.plugin.Plugin
 import revxrsal.commands.bukkit.BukkitCommandActor
 import revxrsal.commands.bukkit.BukkitCommandHandler
@@ -20,7 +19,7 @@ import revxrsal.commands.exception.NoSubcommandSpecifiedException
 import revxrsal.commands.exception.NumberNotInRangeException
 import revxrsal.commands.exception.TooManyArgumentsException
 
-class Commands(private val configs: Configs, private val events: Events, private val messages: Messages, private val plugin: Plugin) {
+class Commands(private val configs: Configs, private val events: Events, private val messages: Messages, private val plugin: Plugin, private val bot: Bot) {
 
     private val bukkitCommandHandler: BukkitCommandHandler = BukkitCommandHandler.create(plugin)
 
@@ -29,6 +28,7 @@ class Commands(private val configs: Configs, private val events: Events, private
 
         bukkitCommandHandler.register(Default(configs, messages, plugin))
         bukkitCommandHandler.register(Help(configs, messages))
+        bukkitCommandHandler.register(Invite(messages, bot))
         bukkitCommandHandler.register(Reload(this, configs, events, messages, plugin))
 
         // Set the exception messages to the ones defined in the language.yml

@@ -27,7 +27,7 @@ class Reload(private val commands: Commands, private val configs: Configs, priva
         // Reload configs.
         configs.reloadConfigs()
 
-        messages.sendMessage("commands.reload.success", sender,
+        messages.sendMessage("commands.reload.message", sender,
             Pair("%duration%", (System.currentTimeMillis() - startTime).toString())
         )
     }
