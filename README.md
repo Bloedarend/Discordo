@@ -3,7 +3,7 @@ Discordo is a plugin that allows users to communicate with each other on both Di
 
 ## Installation
 Follow these steps to install the plugin on your Minecraft and Discord server. For support, please join the [discord](https://bloedarend.dev/discord).
-1. Compile the plugin or download the latest jar at the [Spigot page]().
+1. Compile the plugin or download the latest jar at the [Spigot page](https://www.spigotmc.org/resources/discordo.108824/).
 2. Upload the jar to your Minecraft server and restart it.
 3. Go to the [Discord developers page](https://discord.com/developers/applications) and create a new application.
 4. Navigate to the Bot tab and click on 'Add Bot'.
