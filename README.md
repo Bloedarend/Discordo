@@ -1,2 +1,2 @@
-# Shinobi Mechanics
-A plugin that contains the essential combat mechanics from the game Shinobi Striker.
+# Discordo
+A plugin that lets users communicate to each other through both Discord and Minecraft.
