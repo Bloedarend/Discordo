@@ -8,7 +8,7 @@
     <artifactId>Discordo</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0</version>
-    <description>A plugin that contains the essential combat mechanics from the game Shinobi Striker.</description>
+    <description>A plugin that lets users communicate to each other through both Discord and Minecraft.</description>
 
     <modules>
         <module>plugin</module>
