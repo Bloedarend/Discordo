@@ -50,21 +50,7 @@ class Configs(private val main: Main) {
             value.reload()
         }
 
-        // Store the original client.
-        val client = main.bot.client
-
-        // Pass the new instance of the configs to the utils.
-        main.messages = Messages(this)
-        main.images = Images(main, this, main.helpers)
-        main.bot = Bot(main as Plugin, this, main.messages, main.helpers, main.images)
-        main.events = Events(this, main.messages, main.bot, main.images)
-        main.commands = Commands(this, main.events, main.messages, main, main.bot)
-
-        // Start the bot.
-        main.startBot(client)
-
-        // Register commands and events.
-        main.commands.registerCommands()
-        main.events.registerListeners(main)
+        // Reload the plugin, so all config properties are reloaded.
+        main.reload()
     }
 }

@@ -10,21 +10,26 @@ import dev.kord.core.behavior.getChannelOfOrNull
 import dev.kord.core.entity.channel.TextChannel
 import io.ktor.client.request.forms.*
 import io.ktor.utils.io.jvm.javaio.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.future.future
+import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
+import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.InputStream
 
 class Main: JavaPlugin() {
 
-    val helpers = Helpers()
+    private val helpers = Helpers()
     private val configs = Configs(this)
 
-    lateinit var messages: Messages
-    lateinit var images: Images
-    lateinit var events: Events
-    lateinit var commands: Commands
-    lateinit var bot: Bot
+    private lateinit var messages: Messages
+    private lateinit var images: Images
+    private lateinit var events: Events
+    private lateinit var commands: Commands
+    private lateinit var bot: Bot
 
     override fun onEnable() {
         if (helpers.getVersion(this) >= 16) {
@@ -56,10 +61,30 @@ class Main: JavaPlugin() {
         }
     }
 
-    fun startBot(oldClient: Kord? = null) {
+    private fun startBot(oldClient: Kord? = null) {
         launch {
             oldClient?.logout()
             bot.start()
         }
     }
+
+    fun reload() {
+        // Store the original client.
+        val client = bot.client
+
+        // Pass the new instance of the configs to the utils.
+        messages = Messages(configs)
+        images = Images(this, configs, helpers)
+        bot = Bot(this as Plugin, configs, messages, helpers, images)
+        events = Events(configs, messages, bot, images)
+        commands = Commands(configs, events, messages, this, bot)
+
+        // Start the bot.
+        startBot(client)
+
+        // Register commands and events.
+        commands.registerCommands()
+        events.registerListeners(this)
+    }
+
 }
