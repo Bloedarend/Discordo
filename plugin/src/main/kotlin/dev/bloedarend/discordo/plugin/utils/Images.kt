@@ -1,5 +1,7 @@
 package dev.bloedarend.discordo.plugin.utils
 
+import net.md_5.bungee.api.ChatColor
+import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.plugin.Plugin
 import org.imgscalr.Scalr
 import java.awt.BasicStroke
@@ -33,6 +35,24 @@ class Images(plugin: Plugin, configs: Configs, private val helpers: Helpers) {
     private val fontBold = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftBold-nMK1.ttf")).deriveFont(fontSize)
     private val fontItalic = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftItalic-R8Mo.ttf")).deriveFont(fontSize)
     private val fontBoldItalic = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftBoldItalic-1y1e.ttf")).deriveFont(fontSize)
+
+    fun getInputStream(message: TextComponent): InputStream {
+        var legacyMessage = message.toLegacyText().replace(ChatColor.COLOR_CHAR, '&')
+
+        val legacyPattern = Pattern.compile("&x(&[0-9a-fA-F]){6}")
+        var legacyMatcher = legacyPattern.matcher(legacyMessage)
+
+        // Look for legacy hex code and replace it with our format.
+        while (legacyMatcher.find()) {
+            val match = legacyMessage.substring(legacyMatcher.start(), legacyMatcher.end())
+            val hexCode = "&#${match[3]}${match[5]}${match[7]}${match[9]}${match[11]}${match[13]}"
+
+            legacyMessage = legacyMessage.replaceFirst(match, hexCode)
+            legacyMatcher = legacyPattern.matcher(legacyMessage)
+        }
+
+        return getInputStream(legacyMessage)
+    }
 
     fun getInputStream(message: String): InputStream {
         var currentFont = fontRegular

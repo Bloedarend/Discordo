@@ -60,10 +60,11 @@ class JoinLeave(configs: Configs, private val messages: Messages, private val bo
         val channel = bot.client!!.getGuildOrNull(guildId)!!.getChannelOfOrNull<TextChannel>(channelId)
         channel!!.createMessage {
             val inputStream: InputStream = images.getInputStream(message)
-
-            addFile("discordo.png", ChannelProvider {
+            val provider = ChannelProvider {
                 inputStream.toByteReadChannel()
-            })
+            }
+
+            addFile("discordo.png", provider)
         }
     }
 }

@@ -391,25 +391,12 @@ class MessageCreate(private val plugin: Plugin, configs: Configs, private val me
         if (replaceMessages) {
             message.delete()
             message.channel.createMessage {
-                var legacyMessage = component.toLegacyText().replace(ChatColor.COLOR_CHAR, '&')
-
-                val legacyPattern = Pattern.compile("&x(&[0-9a-fA-F]){6}")
-                var legacyMatcher = legacyPattern.matcher(legacyMessage)
-
-                // Look for legacy hex code and replace it with our format.
-                while (legacyMatcher.find()) {
-                    val match = legacyMessage.substring(legacyMatcher.start(), legacyMatcher.end())
-                    val hexCode = "&#${match[3]}${match[5]}${match[7]}${match[9]}${match[11]}${match[13]}"
-
-                    legacyMessage = legacyMessage.replaceFirst(match, hexCode)
-                    legacyMatcher = legacyPattern.matcher(legacyMessage)
+                val inputStream: InputStream = images.getInputStream(component)
+                val provider = ChannelProvider {
+                    inputStream.toByteReadChannel()
                 }
 
-                val inputStream: InputStream = images.getInputStream(legacyMessage)
-
-                addFile("discordo.png", ChannelProvider {
-                    inputStream.toByteReadChannel()
-                })
+                addFile("discordo.png", provider)
             }
         }
     }

@@ -45,10 +45,11 @@ class Chat(configs: Configs, private val bot: Bot, private val images: Images) :
         val channel = bot.client!!.getGuildOrNull(guildId)!!.getChannelOfOrNull<TextChannel>(channelId)
         channel!!.createMessage {
             val inputStream: InputStream = images.getInputStream(text)
-
-            addFile("discordo.png", ChannelProvider {
+            val provider = ChannelProvider {
                 inputStream.toByteReadChannel()
-            })
+            }
+
+            addFile("discordo.png", provider)
         }
     }
 
