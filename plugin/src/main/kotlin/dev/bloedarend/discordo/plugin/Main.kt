@@ -3,22 +3,11 @@ package dev.bloedarend.discordo.plugin
 import com.github.shynixn.mccoroutine.bukkit.launch
 import dev.bloedarend.discordo.kord.Bot
 import dev.bloedarend.discordo.plugin.utils.*
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
-import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.getChannelOfOrNull
-import dev.kord.core.entity.channel.TextChannel
-import io.ktor.client.request.forms.*
-import io.ktor.utils.io.jvm.javaio.*
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.future.future
-import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
-import java.io.InputStream
 
 class Main: JavaPlugin() {
 
