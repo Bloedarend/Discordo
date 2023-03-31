@@ -1,52 +1,68 @@
 package dev.bloedarend.discordo.plugin
 
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.github.shynixn.mccoroutine.bukkit.scope
+import dev.bloedarend.discordo.api.Discordo
+import dev.bloedarend.discordo.api.IDiscordo
 import dev.bloedarend.discordo.kord.Bot
 import dev.bloedarend.discordo.plugin.utils.*
 import dev.kord.core.Kord
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
-import org.bukkit.plugin.Plugin
+import org.bukkit.plugin.ServicePriority
 import org.bukkit.plugin.java.JavaPlugin
 
 class Main: JavaPlugin() {
 
-    private val helpers = Helpers()
-    private val configs = Configs(this)
-
-    private lateinit var messages: Messages
-    private lateinit var images: Images
-    private lateinit var events: Events
-    private lateinit var commands: Commands
-    private lateinit var bot: Bot
+    lateinit var helpers: Helpers
+        private set
+    lateinit var configs: Configs
+        private set
+    lateinit var messages: Messages
+        private set
+    lateinit var discordo: Discordo
+        private set
+    lateinit var bot: Bot
+        private set
+    lateinit var events: Events
+        private set
+    lateinit var commands: Commands
+        private set
 
     override fun onEnable() {
-        if (helpers.getVersion(this) >= 16) {
-            configs.loadConfigs(this)
+        helpers = Helpers()
+        configs = Configs(this)
 
-            messages = Messages(configs)
-            images = Images(this, configs, helpers)
-            bot = Bot(this, configs, messages, helpers, images)
-            events = Events(configs, messages, bot, images)
-            commands = Commands(configs, events, messages, this, bot)
+        // Load the configs before initialising the other utils.
+        configs.loadConfigs(this)
 
-            startBot()
+        // The order of these is important.
+        messages = Messages(this)
+        discordo = Discordo(this)
+        bot = Bot(this)
+        events = Events(this)
+        commands = Commands(this)
 
-            commands.registerCommands()
-            events.registerListeners(this)
-        }
+        discordo.scope = this.scope
 
-        else {
+        commands.registerCommands()
+        events.registerListeners(this)
+
+        startBot()
+
+        // Register API to Bukkit services.
+        Bukkit.getServer().servicesManager.register(IDiscordo::class.java, discordo, this, ServicePriority.High)
+
+        if (helpers.getVersion(this) < 16) {
             val errorMessage = listOf(
                 "&8-------------------------------< &rDiscordo &8>-------------------------------",
-                " &rVersion not supported. This plugin will only work for servers running",
-                " version &c1.16&r or higher. If you wish to support your version, you",
+                " &rVersion not supported. This plugin may not work as expected on servers",
+                " running versions below &c1.16&r. If the plugin does not work for your version,",
                 " can fork this plugin at &chttps://github.com/Bloedarend/Discordo",
                 "&8--------------------------------------------------------------------------"
             ).joinToString("\n")
 
             server.consoleSender.sendMessage(ChatColor.translateAlternateColorCodes('&', "\n\n${errorMessage}\n"))
-            Bukkit.getPluginManager().disablePlugin(this)
         }
     }
 
@@ -58,18 +74,12 @@ class Main: JavaPlugin() {
     }
 
     fun reload() {
-        // Store the original client.
-        val client = bot.client
+        // Reload all utils.
+        messages.reload()
+        discordo.reload()
 
-        // Pass the new instance of the configs to the utils.
-        messages = Messages(configs)
-        images = Images(this, configs, helpers)
-        bot = Bot(this as Plugin, configs, messages, helpers, images)
-        events = Events(configs, messages, bot, images)
-        commands = Commands(configs, events, messages, this, bot)
-
-        // Start the bot.
-        startBot(client)
+        // Restart the bot.
+        startBot(bot.client)
 
         // Register commands and events.
         commands.registerCommands()
