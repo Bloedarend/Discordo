@@ -12,6 +12,7 @@
 
     <modules>
         <module>plugin</module>
+        <module>discordo-api</module>
     </modules>
 
     <properties>
@@ -53,7 +54,6 @@
     </repositories>
 
     <dependencies>
-
         <!-- Kotlin stdlib -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -155,15 +155,12 @@
             <artifactId>emoji-java</artifactId>
             <version>5.1.1</version>
         </dependency>
-
     </dependencies>
 
     <build>
         <finalName>${project.parent.artifactId}-${project.version}</finalName>
-        <sourceDirectory>src/main/kotlin</sourceDirectory>
         <directory>target</directory>
         <plugins>
-
             <!-- Kotlin maven plugin -->
             <plugin>
                 <artifactId>kotlin-maven-plugin</artifactId>

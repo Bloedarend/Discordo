@@ -1,6 +1,6 @@
 package dev.bloedarend.discordo.plugin.listeners
 
-import dev.bloedarend.discordo.api.Discordo
+import dev.bloedarend.discordo.plugin.Discordo
 import dev.bloedarend.discordo.kord.Bot
 import dev.bloedarend.discordo.plugin.utils.Configs
 import dev.bloedarend.discordo.plugin.utils.Messages

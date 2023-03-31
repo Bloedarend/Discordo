@@ -2,8 +2,6 @@ package dev.bloedarend.discordo.plugin
 
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.scope
-import dev.bloedarend.discordo.api.Discordo
-import dev.bloedarend.discordo.api.IDiscordo
 import dev.bloedarend.discordo.kord.Bot
 import dev.bloedarend.discordo.plugin.utils.*
 import dev.kord.core.Kord

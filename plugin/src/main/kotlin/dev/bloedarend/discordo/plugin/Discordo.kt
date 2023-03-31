@@ -1,6 +1,6 @@
-package dev.bloedarend.discordo.api
+package dev.bloedarend.discordo.plugin
 
-import dev.bloedarend.discordo.plugin.Main
+import dev.bloedarend.discordo.api.IDiscordo
 import dev.dejvokep.boostedyaml.YamlDocument
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
