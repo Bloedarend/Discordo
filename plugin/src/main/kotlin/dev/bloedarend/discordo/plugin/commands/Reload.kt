@@ -11,7 +11,7 @@ import revxrsal.commands.annotation.Subcommand
 import revxrsal.commands.annotation.Usage
 import revxrsal.commands.bukkit.annotation.CommandPermission
 
-class Reload(private val commands: Commands, private val configs: Configs, private val events: Events, private val messages: Messages, private val plugin: Plugin) {
+class Reload(private val commands: Commands, private val configs: Configs, private val events: Events, private val messages: Messages) {
 
     @Command("dco", "discordo")
     @Subcommand("reload")

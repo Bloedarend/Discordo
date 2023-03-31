@@ -1,13 +1,13 @@
 package dev.bloedarend.discordo.plugin.utils
 
-import org.bukkit.plugin.Plugin
+import dev.bloedarend.discordo.plugin.Main
 import java.awt.Color
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 class Helpers {
 
-    fun getVersion(plugin: Plugin): Int {
+    fun getVersion(plugin: Main): Int {
         // Get the first two values of the minecraft version.
         val version: Matcher = Pattern.compile("\\d+\\.\\d+").matcher(plugin.server.version)
         version.find()

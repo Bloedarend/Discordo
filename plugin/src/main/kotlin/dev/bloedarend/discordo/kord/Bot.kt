@@ -1,28 +1,24 @@
 package dev.bloedarend.discordo.kord
 
 import dev.bloedarend.discordo.kord.events.MessageCreate
-import dev.bloedarend.discordo.plugin.utils.Configs
-import dev.bloedarend.discordo.plugin.utils.Helpers
-import dev.bloedarend.discordo.plugin.utils.Images
-import dev.bloedarend.discordo.plugin.utils.Messages
+import dev.bloedarend.discordo.plugin.Main
 import dev.kord.core.Kord
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.KordInitializationException
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
-import io.ktor.client.request.forms.*
-import io.ktor.utils.io.jvm.javaio.*
-import kotlinx.coroutines.flow.*
 import net.md_5.bungee.api.ChatColor
-import org.bukkit.plugin.Plugin
 
-class Bot(private val plugin: Plugin, configs: Configs, messages: Messages, helpers: Helpers, images: Images) {
+class Bot(private val plugin: Main) {
+
+    private val configs = plugin.configs
 
     var client: Kord? = null
-    private val token = configs.getConfig("token")?.getString("token")
+        private set
+    private val token = configs.getConfig("token")?.getString("token") ?: ""
 
-    private val messageCreate = MessageCreate(plugin, configs, messages, helpers, images)
+    private val messageCreate = MessageCreate(plugin)
     suspend fun start() {
         initialize()
 
@@ -41,7 +37,7 @@ class Bot(private val plugin: Plugin, configs: Configs, messages: Messages, help
         ).joinToString("\n")
 
         try {
-            client = Kord(token!!)
+            client = Kord(token)
         } catch (exception: KordInitializationException) {
             plugin.server.consoleSender.sendMessage(ChatColor.translateAlternateColorCodes('&', "\n\n${errorMessage}\n"))
         }

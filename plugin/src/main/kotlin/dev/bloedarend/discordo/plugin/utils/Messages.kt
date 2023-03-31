@@ -1,23 +1,21 @@
 package dev.bloedarend.discordo.plugin.utils
 
+import dev.bloedarend.discordo.plugin.Main
 import dev.dejvokep.boostedyaml.YamlDocument
 import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import java.util.regex.Pattern
 
-class Messages(configs: Configs) {
+class Messages(plugin: Main) {
 
-    private val config: YamlDocument? = configs.getConfig("language")
+    private val configs = plugin.configs
 
-    private val colorX = config?.getChar("color-x") ?: '8'
-    private val colorY = config?.getChar("color-y") ?: '7'
-    private val colorZ = config?.getChar("color-z") ?: 'f'
-    private val prefix = config?.getString("prefix") ?: "●"
+    private var config = Config(configs.getConfig("language"))
 
     fun sendMessage(path: String, sender: CommandSender, vararg placeholders: Pair<String, String>) {
-        val message = config?.getString(path)
-        val messages = config?.getList(path) ?: ArrayList<String>()
+        val message = config.language?.getString(path)
+        val messages = config.language?.getList(path) ?: ArrayList<String>()
         if (message == null && messages.isEmpty()) return
 
         val player = if (sender is Player) sender else null
@@ -27,8 +25,8 @@ class Messages(configs: Configs) {
     }
 
     fun getMessage(path: String, sender: CommandSender? = null, vararg placeholders: Pair<String, String>): String {
-        val message = config!!.getString(path)
-        val messages = config.getList(path)
+        val message = config.language!!.getString(path)
+        val messages = config.language!!.getList(path)
 
         val player = if (sender is Player) sender else null
 
@@ -40,12 +38,12 @@ class Messages(configs: Configs) {
         var message = msg
 
         // Replace prefix with corresponding value.
-        message = message.replace("%prefix%", prefix)
+        message = message.replace("%prefix%", config.prefix)
 
         // Replace color code placeholders with the corresponding colors.
-        message = message.replace("&x", "&${colorX}")
-            .replace("&y", "&${colorY}")
-            .replace("&z", "&${colorZ}")
+        message = message.replace("&x", "&${config.colorX}")
+            .replace("&y", "&${config.colorY}")
+            .replace("&z", "&${config.colorZ}")
 
         // Replace player placeholders with the corresponding values.
         if (player != null) {
@@ -61,7 +59,7 @@ class Messages(configs: Configs) {
         return ChatColor.translateAlternateColorCodes('&', message)
     }
 
-    fun formatHexMessage(msg: String): String {
+    private fun formatHexMessage(msg: String): String {
         var message = msg
         val pattern = Pattern.compile("&#[a-fA-F0-9]{6}")
         var matcher = pattern.matcher(message)
@@ -73,6 +71,18 @@ class Messages(configs: Configs) {
         }
 
         return message
+    }
+
+    fun reload() {
+        config = Config(configs.getConfig("language"))
+    }
+
+    data class Config(private val config: YamlDocument?) {
+        val language = config
+        val colorX = config?.getChar("color-x") ?: '8'
+        val colorY = config?.getChar("color-y") ?: '7'
+        val colorZ = config?.getChar("color-z") ?: 'f'
+        val prefix = config?.getString("prefix") ?: "●"
     }
 
 }
