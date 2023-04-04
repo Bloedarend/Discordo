@@ -5,7 +5,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface IDiscordo {
+public interface DiscordoAPI {
 
     /**
      * Send an image to the channel defined in the discordo config.yml
