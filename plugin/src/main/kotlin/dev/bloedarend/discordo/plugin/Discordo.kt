@@ -1,6 +1,6 @@
 package dev.bloedarend.discordo.plugin
 
-import dev.bloedarend.discordo.api.IDiscordo
+import dev.bloedarend.discordo.api.DiscordoAPI
 import dev.dejvokep.boostedyaml.YamlDocument
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 import javax.imageio.ImageIO
 
-class Discordo(private val plugin: Main) : IDiscordo {
+open class Discordo(private val plugin: Main) : DiscordoAPI {
 
     private val configs = plugin.configs
     private val helpers = plugin.helpers
@@ -37,7 +37,7 @@ class Discordo(private val plugin: Main) : IDiscordo {
     }
 
     override fun sendImage(string: String, channelId: String) = scope.future {
-        createMessage(getInputStream(string), config.channelId)
+        createMessage(getInputStream(string), channelId)
     }
 
     override fun sendImage(textComponent: TextComponent) = scope.future {
