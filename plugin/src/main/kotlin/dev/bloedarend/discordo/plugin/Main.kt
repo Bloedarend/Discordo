@@ -2,15 +2,15 @@ package dev.bloedarend.discordo.plugin
 
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.scope
+import dev.bloedarend.discordo.api.DiscordoAPI
+import dev.bloedarend.discordo.api.DiscordoPlugin
 import dev.bloedarend.discordo.kord.Bot
 import dev.bloedarend.discordo.plugin.utils.*
 import dev.kord.core.Kord
-import org.bukkit.Bukkit
 import org.bukkit.ChatColor
-import org.bukkit.plugin.ServicePriority
 import org.bukkit.plugin.java.JavaPlugin
 
-class Main: JavaPlugin() {
+class Main: JavaPlugin(), DiscordoPlugin {
 
     lateinit var helpers: Helpers
         private set
@@ -48,9 +48,6 @@ class Main: JavaPlugin() {
 
         startBot()
 
-        // Register API to Bukkit services.
-        Bukkit.getServer().servicesManager.register(IDiscordo::class.java, discordo, this, ServicePriority.High)
-
         if (helpers.getVersion(this) < 16) {
             val errorMessage = listOf(
                 "&8-------------------------------< &rDiscordo &8>-------------------------------",
@@ -82,6 +79,14 @@ class Main: JavaPlugin() {
         // Register commands and events.
         commands.registerCommands()
         events.registerListeners(this)
+    }
+
+    override fun getAPI(): DiscordoAPI {
+        if (::discordo.isInitialized) {
+            return discordo
+        } else {
+            throw Exception("DiscordoAPI has not been initialized yet!")
+        }
     }
 
 }
