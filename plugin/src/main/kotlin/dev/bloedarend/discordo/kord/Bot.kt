@@ -16,7 +16,7 @@ class Bot(private val plugin: Main) {
 
     var client: Kord? = null
         private set
-    private val token = configs.getConfig("token")?.getString("token") ?: ""
+    private lateinit var token: String
 
     private val messageCreate = MessageCreate(plugin)
     suspend fun start() {
@@ -29,6 +29,8 @@ class Bot(private val plugin: Main) {
     }
 
     private suspend fun initialize() {
+        token = configs.getConfig("token")?.getString("token") ?: ""
+
         val errorMessage = listOf(
             "&8-------------------------------< &rDiscordo &8>-------------------------------",
             " &rBot token is invalid. If you need help with the plugin installation,",
@@ -40,6 +42,7 @@ class Bot(private val plugin: Main) {
             client = Kord(token)
         } catch (exception: KordInitializationException) {
             plugin.server.consoleSender.sendMessage(ChatColor.translateAlternateColorCodes('&', "\n\n${errorMessage}\n"))
+            exception.printStackTrace()
         }
     }
 
