@@ -37,7 +37,7 @@ softdepend: # Your plugin will enable without Discordo.
 <dependency>
     <groupId>dev.bloedarend</groupId>
     <artifactId>discordo-api</artifactId>
-    <version>${version}</version> <!-- Replace ${version} with the latest api version, which can be found at the top of this README. -->
+    <version>1.1.0</version>
 </dependency>
 ```
 ### Using Discordo in your plugin.
