@@ -25,7 +25,7 @@ The Discordo API offers the ability for other plugin developers to send their ow
 1. Add Discordo as a dependency in your `plugin.yml` file.
 ```yml
 depend: # Your plugin will not enable if the server does not have the Discordo plugin.
-  - Discord
+  - Discordo
 ```
 ```yml
 softdepend: # Your plugin will enable without Discordo.
