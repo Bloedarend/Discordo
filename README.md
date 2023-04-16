@@ -1,4 +1,4 @@
-[![Discordo API]https://maven-badges.herokuapp.com/maven-central/dev.bloedarend/discordo-api/badge.svg](https://central.sonatype.com/artifact/dev.bloedarend/discordo-api/)
+[![Discordo API]https://maven-badges.herokuapp.com/maven-central/dev.bloedarend/discordo-api/badge.svg](https://maven-badges.herokuapp.com/maven-central/dev.bloedarend/discordo-api/)
 
 # Discordo
 Discordo is a plugin that allows users to communicate with each other on both Discord and Minecraft. What makes it special is the implementation of image manipulation, which displays messages to Discord as an image using the Minecraft chat format.
