@@ -19,7 +19,7 @@ Follow these steps to install the plugin to your Minecraft and Discord server. F
 14. Make sure the bot has permission to 'View Channel', 'Send Messages' and 'Attach Files'.
 15. Reload the plugin with the '/dco reload' command. Players should not be able to communicate between your Minecraft server and the Discord channel.
 
-##API
+## API
 The Discordo API offers the ability for other plugin developers to send their own messages to the Discord server as an image using the Minecraft chat format.
 ### Adding Discordo to your plugin:
 1. Add Discordo as a dependency in your `plugin.yml` file.
