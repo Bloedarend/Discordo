@@ -9,7 +9,7 @@
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A plugin that lets users communicate to each other through both Discord and Minecraft.</description>
     <url>https://github.com/Bloedarend/Discordo</url>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
     <packaging>pom</packaging>
 
     <modules>
