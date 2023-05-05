@@ -51,31 +51,31 @@ class CommandUtil private constructor() {
             }
 
             bukkitCommandHandler.registerExceptionHandler(InvalidBooleanException::class.java) { actor, exception ->
-                MessageUtil.sendMessage("errors.invalid-boolean", (actor as BukkitCommandActor).sender,
+                MessageUtil.sendMessage("exceptions.invalid-boolean", (actor as BukkitCommandActor).sender,
                     Pair("%input%", exception.input)
                 )
             }
 
             bukkitCommandHandler.registerExceptionHandler(InvalidCommandException::class.java) { actor, exception ->
-                MessageUtil.sendMessage("errors.invalid-command", (actor as BukkitCommandActor).sender,
+                MessageUtil.sendMessage("exceptions.invalid-command", (actor as BukkitCommandActor).sender,
                     Pair("%input%", exception.input)
                 )
             }
 
             bukkitCommandHandler.registerExceptionHandler(InvalidNumberException::class.java) { actor, exception ->
-                MessageUtil.sendMessage("errors.invalid-number", (actor as BukkitCommandActor).sender,
+                MessageUtil.sendMessage("exceptions.invalid-number", (actor as BukkitCommandActor).sender,
                     Pair("%input%", exception.input)
                 )
             }
 
             bukkitCommandHandler.registerExceptionHandler(InvalidPlayerException::class.java) { actor, exception ->
-                MessageUtil.sendMessage("errors.invalid-player", (actor as BukkitCommandActor).sender,
+                MessageUtil.sendMessage("exceptions.invalid-player", (actor as BukkitCommandActor).sender,
                     Pair("%input%", exception.input)
                 )
             }
 
             bukkitCommandHandler.registerExceptionHandler(InvalidSubcommandException::class.java) { actor, exception ->
-                MessageUtil.sendMessage("errors.invalid-command", (actor as BukkitCommandActor).sender,
+                MessageUtil.sendMessage("exceptions.invalid-command", (actor as BukkitCommandActor).sender,
                     Pair("%input%", exception.input)
                 )
             }
@@ -89,7 +89,7 @@ class CommandUtil private constructor() {
             }
 
             bukkitCommandHandler.registerExceptionHandler(NumberNotInRangeException::class.java) { actor, exception ->
-                MessageUtil.sendMessage("errors.number-not-in-range", (actor as BukkitCommandActor).sender,
+                MessageUtil.sendMessage("exceptions.number-not-in-range", (actor as BukkitCommandActor).sender,
                     Pair("%input%", exception.input.toString()),
                     Pair("%min", exception.maximum.toString()),
                     Pair("max", exception.maximum.toString())
@@ -97,7 +97,8 @@ class CommandUtil private constructor() {
             }
 
             bukkitCommandHandler.registerExceptionHandler(MissingArgumentException::class.java) { actor, exception ->
-                MessageUtil.sendMessage("errors.missing-argument", (actor as BukkitCommandActor).sender,
+                println("missing arg")
+                MessageUtil.sendMessage("exceptions.missing-argument", (actor as BukkitCommandActor).sender,
                     Pair("%parameter%", exception.parameter.name)
                 )
             }
@@ -111,7 +112,7 @@ class CommandUtil private constructor() {
             }
 
             bukkitCommandHandler.registerExceptionHandler(TooManyArgumentsException::class.java) { actor, exception ->
-                MessageUtil.sendMessage("errors.incorrect-usage", (actor as BukkitCommandActor).sender,
+                MessageUtil.sendMessage("exceptions.incorrect-usage", (actor as BukkitCommandActor).sender,
                     Pair("%usage%", exception.command.usage)
                 )
             }
