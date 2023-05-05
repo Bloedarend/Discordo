@@ -107,6 +107,10 @@ exceptions:
   sender-not-player: "&4%prefix% &cThis command can only be executed by players!"
 
 commands:
+  broadcast:
+    description: "Send a broadcast message to the Discord server."
+    format: "&x[&y&lBROADCAST&x] &z%message%"
+    message: "&x%prefix% &yThe message was successfully broadcast to Discord."
   default:
     title: "&x&lDiscordo"
     line: "&x %prefix% &y%property%: &z%value%"
@@ -120,11 +124,11 @@ commands:
     use-separator: true
   invite:
     description: "Invite the bot to your server."
-    message: "&x&l%prefix% &yBot invite link: &z%invite%"
+    message: "&x%prefix% &yBot invite link: &z%invite%"
   reload:
     description: "Reload the plugin."
     message: "&x%prefix% &yThe plugin was successfully reloaded! (&z%duration%ms&y)"
 
 # The version of this config file.
 # (!) Do not change this value.
-file-version: 1
+file-version: 2
