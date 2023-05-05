@@ -18,15 +18,12 @@ class Main: JavaPlugin(), DiscordoPlugin {
         private set
 
     override fun onEnable() {
-
-        // Load the configs before initialising the other utils.
         ConfigUtil.loadConfigs(this)
 
-        // The order of these is important.
         discordo = Discordo(this)
-        bot = Bot(this)
-
         discordo.scope = this.scope
+
+        bot = Bot(this)
 
         CommandUtil.createCommandHandler(this)
         CommandUtil.registerCommands(this)
