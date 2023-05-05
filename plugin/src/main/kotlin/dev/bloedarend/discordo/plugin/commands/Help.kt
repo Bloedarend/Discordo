@@ -1,16 +1,16 @@
 package dev.bloedarend.discordo.plugin.commands
 
-import dev.bloedarend.discordo.plugin.utils.Configs
-import dev.bloedarend.discordo.plugin.utils.Messages
+import dev.bloedarend.discordo.plugin.utils.ConfigUtil
+import dev.bloedarend.discordo.plugin.utils.MessageUtil
 import dev.dejvokep.boostedyaml.YamlDocument
 import org.bukkit.command.CommandSender
 import revxrsal.commands.annotation.Command
 import revxrsal.commands.annotation.Subcommand
 import revxrsal.commands.annotation.Usage
 
-class Help(configs: Configs, private val messages: Messages) {
+class Help {
 
-    private val config: YamlDocument? = configs.getConfig("language")
+    private val config: YamlDocument? = ConfigUtil.getConfig("language")
 
     private val useSeparator = config?.getBoolean("command.help.use-separator") ?: true
 
@@ -19,23 +19,24 @@ class Help(configs: Configs, private val messages: Messages) {
     @Usage("dco help")
     fun onCommand(sender: CommandSender) {
         val commands: List<Pair<String, String>> = listOf(
-            Pair("dco help", messages.getMessage("commands.help.description", sender)),
-            Pair("dco invite", messages.getMessage("commands.invite.description", sender)),
-            Pair("dco reload", messages.getMessage("commands.reload.description", sender))
+            Pair("dco broadcast <message>", MessageUtil.getMessage("commands.broadcast.description", sender)),
+            Pair("dco help", MessageUtil.getMessage("commands.help.description", sender)),
+            Pair("dco invite", MessageUtil.getMessage("commands.invite.description", sender)),
+            Pair("dco reload", MessageUtil.getMessage("commands.reload.description", sender))
         )
 
-        if (useSeparator) messages.sendMessage("commands.help.separator", sender)
+        if (useSeparator) MessageUtil.sendMessage("commands.help.separator", sender)
 
-        messages.sendMessage("commands.help.title", sender)
+        MessageUtil.sendMessage("commands.help.title", sender)
 
         for (command in commands) {
-            messages.sendMessage("commands.help.line", sender,
+            MessageUtil.sendMessage("commands.help.line", sender,
                 Pair("%command%", command.first),
                 Pair("%command_description%", command.second)
             )
         }
 
-        if (useSeparator) messages.sendMessage("commands.help.separator", sender)
+        if (useSeparator) MessageUtil.sendMessage("commands.help.separator", sender)
     }
 
 }

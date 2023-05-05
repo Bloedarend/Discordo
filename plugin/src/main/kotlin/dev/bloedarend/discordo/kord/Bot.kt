@@ -2,6 +2,7 @@ package dev.bloedarend.discordo.kord
 
 import dev.bloedarend.discordo.kord.events.MessageCreate
 import dev.bloedarend.discordo.plugin.Main
+import dev.bloedarend.discordo.plugin.utils.ConfigUtil
 import dev.kord.core.Kord
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.KordInitializationException
@@ -11,8 +12,6 @@ import dev.kord.gateway.PrivilegedIntent
 import net.md_5.bungee.api.ChatColor
 
 class Bot(private val plugin: Main) {
-
-    private val configs = plugin.configs
 
     var client: Kord? = null
         private set
@@ -29,7 +28,7 @@ class Bot(private val plugin: Main) {
     }
 
     private suspend fun initialize() {
-        token = configs.getConfig("token")?.getString("token") ?: ""
+        token = ConfigUtil.getConfig("token")?.getString("token") ?: ""
 
         val errorMessage = listOf(
             "&8-------------------------------< &rDiscordo &8>-------------------------------",

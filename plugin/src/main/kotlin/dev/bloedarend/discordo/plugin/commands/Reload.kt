@@ -1,17 +1,17 @@
 package dev.bloedarend.discordo.plugin.commands
 
-import dev.bloedarend.discordo.plugin.utils.Commands
-import dev.bloedarend.discordo.plugin.utils.Configs
-import dev.bloedarend.discordo.plugin.utils.Events
-import dev.bloedarend.discordo.plugin.utils.Messages
+import dev.bloedarend.discordo.plugin.Main
+import dev.bloedarend.discordo.plugin.utils.CommandUtil
+import dev.bloedarend.discordo.plugin.utils.ConfigUtil
+import dev.bloedarend.discordo.plugin.utils.EventUtil
+import dev.bloedarend.discordo.plugin.utils.MessageUtil
 import org.bukkit.command.CommandSender
-import org.bukkit.plugin.Plugin
 import revxrsal.commands.annotation.Command
 import revxrsal.commands.annotation.Subcommand
 import revxrsal.commands.annotation.Usage
 import revxrsal.commands.bukkit.annotation.CommandPermission
 
-class Reload(private val commands: Commands, private val configs: Configs, private val events: Events, private val messages: Messages) {
+class Reload(private val plugin: Main) {
 
     @Command("dco", "discordo")
     @Subcommand("reload")
@@ -21,13 +21,14 @@ class Reload(private val commands: Commands, private val configs: Configs, priva
         val startTime = System.currentTimeMillis()
 
         // Unregister events and commands, because all config properties are initialised in the class.
-        commands.unregisterCommands()
-        events.unregisterListeners()
+        CommandUtil.unregisterCommands()
+        EventUtil.unregisterListeners()
 
         // Reload configs.
-        configs.reloadConfigs()
+        ConfigUtil.reloadConfigs()
+        plugin.reload()
 
-        messages.sendMessage("commands.reload.message", sender,
+        MessageUtil.sendMessage("commands.reload.message", sender,
             Pair("%duration%", (System.currentTimeMillis() - startTime).toString())
         )
     }

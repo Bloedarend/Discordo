@@ -1,17 +1,16 @@
 package dev.bloedarend.discordo.plugin.listeners
 
-import dev.bloedarend.discordo.plugin.Discordo
-import dev.bloedarend.discordo.kord.Bot
-import dev.bloedarend.discordo.plugin.utils.Configs
+import dev.bloedarend.discordo.plugin.Main
+import dev.bloedarend.discordo.plugin.utils.ConfigUtil
 import dev.dejvokep.boostedyaml.YamlDocument
 import org.bukkit.ChatColor
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.AsyncPlayerChatEvent
 
-class Chat(configs: Configs, private val bot: Bot, private val discordo: Discordo) : Listener {
+class Chat(private val plugin: Main) : Listener {
 
-    private val config: YamlDocument? = configs.getConfig("config")
+    private val config: YamlDocument? = ConfigUtil.getConfig("config")
 
     private val enabled = config?.getBoolean("minecraft.enabled") ?: false
     private val translateColorCodes = config?.getBoolean("minecraft.translate-color-codes") ?: false
@@ -19,7 +18,7 @@ class Chat(configs: Configs, private val bot: Bot, private val discordo: Discord
     @EventHandler
     fun onAsyncPlayerChat(event: AsyncPlayerChatEvent) {
         if (!enabled) return
-        if (bot.client == null) return // Can't send messages if the bot client is not ready.
+        if (plugin.bot.client == null) return // Can't send messages if the bot client is not ready.
 
         val player = event.player
         var message = event.message.replace("${ChatColor.COLOR_CHAR}","&") // Turn chat colors back to color codes.
@@ -31,7 +30,7 @@ class Chat(configs: Configs, private val bot: Bot, private val discordo: Discord
 
         val text = String.format(event.format, player.displayName.replace("${ChatColor.COLOR_CHAR}","&"), message)
 
-        discordo.sendImage(text)
+        plugin.discordo.sendImage(text)
     }
 
 }

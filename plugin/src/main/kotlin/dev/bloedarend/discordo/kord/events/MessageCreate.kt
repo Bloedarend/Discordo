@@ -2,17 +2,14 @@ package dev.bloedarend.discordo.kord.events
 
 import com.vdurmont.emoji.EmojiParser
 import dev.bloedarend.discordo.plugin.Main
-import dev.bloedarend.discordo.plugin.utils.Configs
-import dev.bloedarend.discordo.plugin.utils.Helpers
-import dev.bloedarend.discordo.plugin.utils.Messages
+import dev.bloedarend.discordo.plugin.utils.ConfigUtil
+import dev.bloedarend.discordo.plugin.utils.HelperUtil
+import dev.bloedarend.discordo.plugin.utils.MessageUtil
 import dev.dejvokep.boostedyaml.YamlDocument
 import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Member
 import dev.kord.core.event.message.MessageCreateEvent
-import io.ktor.client.request.forms.*
-import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import net.md_5.bungee.api.ChatColor
@@ -21,9 +18,7 @@ import net.md_5.bungee.api.chat.ComponentBuilder
 import net.md_5.bungee.api.chat.HoverEvent
 import net.md_5.bungee.api.chat.TextComponent
 import net.md_5.bungee.api.chat.hover.content.Text
-import org.bukkit.plugin.Plugin
 import java.awt.Color
-import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.regex.Pattern
@@ -31,12 +26,9 @@ import kotlin.collections.ArrayList
 
 class MessageCreate(private val plugin: Main) {
 
-    private val configs = plugin.configs
-    private val messages = plugin.messages
-    private val helpers = plugin.helpers
     private val discordo = plugin.discordo
 
-    private val config = Config(configs.getConfig("config"))
+    private val config = Config(ConfigUtil.getConfig("config"))
 
     suspend fun onMessageCreate(event: MessageCreateEvent) {
         val message = event.message
@@ -131,7 +123,7 @@ class MessageCreate(private val plugin: Main) {
                                 if (config.useRoleColor) {
                                     Color(roleColor.red, roleColor.green, roleColor.blue)
                                 } else {
-                                    helpers.darkenColor(helpers.getColor(colorCode), 1)
+                                    HelperUtil.darkenColor(HelperUtil.getColor(colorCode), 1)
                                 }
                             val highlightColorCode = String.format("&#%02x%02x%02x", color.red, color.green, color.blue)
                             val styles = getLastStyleCodes(preContent)
@@ -141,7 +133,7 @@ class MessageCreate(private val plugin: Main) {
                             content = "$colorCode$styles$content"
                         }
 
-                        val hoverRole = messages.getMessage("discord.mentions.hover-role", null,
+                        val hoverRole = MessageUtil.getMessage("discord.mentions.hover-role", null,
                             Pair("%role_name%", role.name),
                             Pair("%role_color%", String.format("&#%02x%02x%02x", roleColor.red, roleColor.green, roleColor.blue))
                         )
@@ -173,7 +165,7 @@ class MessageCreate(private val plugin: Main) {
                         var newValue = "@${mentionedMember.displayName}"
                         if (config.highlightMentions) {
                             val colorCode = getLastColorCode(preContent) ?: "&f"
-                            val color = helpers.darkenColor(helpers.getColor(colorCode), 1)
+                            val color = HelperUtil.darkenColor(HelperUtil.getColor(colorCode), 1)
                             val highlightColorCode = String.format("&#%02x%02x%02x", color.red, color.green, color.blue)
                             val styles = getLastStyleCodes(preContent)
 
@@ -182,7 +174,7 @@ class MessageCreate(private val plugin: Main) {
                             content = "$colorCode$styles$content"
                         }
 
-                        val hoverMember = messages.getMessage("discord.mentions.hover-member", null, *getMemberPlaceholders(mentionedMember))
+                        val hoverMember = MessageUtil.getMessage("discord.mentions.hover-member", null, *getMemberPlaceholders(mentionedMember))
 
                         val hoverEvent =
                             if (config.memberHoverEnabled) {
@@ -214,11 +206,11 @@ class MessageCreate(private val plugin: Main) {
                         content = content.substring(matcher.end())
 
                         val isVoice = channel.type == ChannelType.GuildVoice || channel.type == ChannelType.GuildStageVoice
-                        var icon = messages.getMessage("discord.mentions.icon-text-channel")
+                        var icon = MessageUtil.getMessage("discord.mentions.icon-text-channel")
                         var path = "discord.mentions.hover-text-channel"
 
                         if (isVoice) {
-                            icon = messages.getMessage("discord.mentions.icon-voice-channel")
+                            icon = MessageUtil.getMessage("discord.mentions.icon-voice-channel")
                             path = "discord.mentions.hover-voice-channel"
                         }
 
@@ -226,7 +218,7 @@ class MessageCreate(private val plugin: Main) {
 
                         if (config.highlightMentions) {
                             val colorCode = getLastColorCode(preContent) ?: "&f"
-                            val color = helpers.darkenColor(helpers.getColor(colorCode), 1)
+                            val color = HelperUtil.darkenColor(HelperUtil.getColor(colorCode), 1)
                             val highlightColorCode = String.format("&#%02x%02x%02x", color.red, color.green, color.blue)
                             val styles = getLastStyleCodes(preContent)
 
@@ -243,14 +235,14 @@ class MessageCreate(private val plugin: Main) {
                         val userLimit = channel.data.userLimit.asNullable ?: 0
                         val max =
                             if (userLimit <= 0) {
-                                messages.getMessage("discord.mentions.icon-no-limit")
+                                MessageUtil.getMessage("discord.mentions.icon-no-limit")
                             } else {
                                 userLimit.toString()
                             }
 
-                        val hoverChannel = messages.getMessage(path, null,
+                        val hoverChannel = MessageUtil.getMessage(path, null,
                             Pair("%channel_name%", channel.name),
-                            Pair("%channel_description%", channel.data.topic.value ?: messages.getMessage("discord.mentions.no-channel-description")),
+                            Pair("%channel_description%", channel.data.topic.value ?: MessageUtil.getMessage("discord.mentions.no-channel-description")),
                             Pair("%channel_connected%", connected.toString()),
                             Pair("%channel_max%", max)
                         )
@@ -279,8 +271,8 @@ class MessageCreate(private val plugin: Main) {
         var contentLength = 0
         var component = TextComponent("")
         val contentSplitForEvents = ArrayList<String>()
-        var format = messages.getMessage("discord.format", null,
-            Pair("%member_roles%", getMemberRoles(member).toList().joinToString(messages.getMessage("discord.member-roles.separator"))),
+        var format = MessageUtil.getMessage("discord.format", null,
+            Pair("%member_roles%", getMemberRoles(member).toList().joinToString(MessageUtil.getMessage("discord.member-roles.separator"))),
             Pair("%role_name%", getMemberRole(member)),
             Pair("%role_color%", getMemberColor(member))
         )
@@ -309,7 +301,7 @@ class MessageCreate(private val plugin: Main) {
                 val date = Date(milliseconds)
                 val dateFormatted = SimpleDateFormat(config.dateFormat).format(date)
 
-                val hoverMember = messages.getMessage("discord.hover", null, *getMemberPlaceholders(member))
+                val hoverMember = MessageUtil.getMessage("discord.hover", null, *getMemberPlaceholders(member))
                     .replace("%message_date%", dateFormatted)
 
                 val hoverEvent =
@@ -414,7 +406,7 @@ class MessageCreate(private val plugin: Main) {
 
             textComponent.addExtra(component)
 
-            color = helpers.getColor(message.substring(matcher.start(), matcher.end()))
+            color = HelperUtil.getColor(message.substring(matcher.start(), matcher.end()))
             message = message.substring(matcher.end())
             matcher = pattern.matcher(message)
         }
@@ -425,7 +417,7 @@ class MessageCreate(private val plugin: Main) {
 
         val lastColorCode = getLastColorCode(message)
         if (lastColorCode != null) {
-            color = helpers.getColor(lastColorCode)
+            color = HelperUtil.getColor(lastColorCode)
         }
 
         if (hoverEvent != null) {
@@ -459,7 +451,7 @@ class MessageCreate(private val plugin: Main) {
             component.color = ChatColor.of(color)
             textComponent.addExtra(component)
 
-            color = helpers.getColor(message.substring(matcher.start(), matcher.end()))
+            color = HelperUtil.getColor(message.substring(matcher.start(), matcher.end()))
             message = message.substring(matcher.end())
             matcher = pattern.matcher(message)
         }
@@ -477,7 +469,7 @@ class MessageCreate(private val plugin: Main) {
             Pair("%member_name%", member.username),
             Pair("%member_displayname%", member.displayName),
             Pair("%member_tag%", member.tag),
-            Pair("%member_roles%", getMemberRoles(member).toList().joinToString(messages.getMessage("discord.member-roles.separator"))),
+            Pair("%member_roles%", getMemberRoles(member).toList().joinToString(MessageUtil.getMessage("discord.member-roles.separator"))),
             Pair("%role_name%", getMemberRole(member)),
             Pair("%role_color%", getMemberColor(member))
         )
@@ -498,7 +490,7 @@ class MessageCreate(private val plugin: Main) {
         val roles = member.roles.toList().sortedDescending()
 
         return roles.map {
-            messages.getMessage("discord.member-roles.format", null,
+            MessageUtil.getMessage("discord.member-roles.format", null,
                 Pair("%current_role_name%", it.name),
                 Pair("%current_role_color%", String.format("&#%02x%02x%02x", it.color.red, it.color.green, it.color.blue))
             )

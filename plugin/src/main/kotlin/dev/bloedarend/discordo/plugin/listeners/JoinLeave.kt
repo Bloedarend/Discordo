@@ -1,9 +1,8 @@
 package dev.bloedarend.discordo.plugin.listeners
 
-import dev.bloedarend.discordo.plugin.Discordo
-import dev.bloedarend.discordo.kord.Bot
-import dev.bloedarend.discordo.plugin.utils.Configs
-import dev.bloedarend.discordo.plugin.utils.Messages
+import dev.bloedarend.discordo.plugin.Main
+import dev.bloedarend.discordo.plugin.utils.ConfigUtil
+import dev.bloedarend.discordo.plugin.utils.MessageUtil
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -11,9 +10,9 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
-class JoinLeave(configs: Configs, private val messages: Messages, private val bot: Bot, private val discordo: Discordo) : Listener {
+class JoinLeave(private val plugin: Main) : Listener {
 
-    private val config = configs.getConfig("config")
+    private val config = ConfigUtil.getConfig("config")
 
     private val joinEnabled = config?.getBoolean("minecraft.join.enabled") ?: false
     private val silentJoinEnabled = config?.getBoolean("minecraft.join.silent") ?: false
@@ -43,8 +42,8 @@ class JoinLeave(configs: Configs, private val messages: Messages, private val bo
     }
 
     private fun sendImage(path: String, player: Player) {
-        val message = messages.getMessage(path, player).replace("${ChatColor.COLOR_CHAR}","&")
+        val message = MessageUtil.getMessage(path, player).replace("${ChatColor.COLOR_CHAR}","&")
 
-        discordo.sendImage(message)
+        plugin.discordo.sendImage(message)
     }
 }

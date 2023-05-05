@@ -1,6 +1,8 @@
 package dev.bloedarend.discordo.plugin
 
 import dev.bloedarend.discordo.api.DiscordoAPI
+import dev.bloedarend.discordo.plugin.utils.ConfigUtil
+import dev.bloedarend.discordo.plugin.utils.HelperUtil
 import dev.dejvokep.boostedyaml.YamlDocument
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
@@ -26,10 +28,7 @@ import javax.imageio.ImageIO
 
 open class Discordo(private val plugin: Main) : DiscordoAPI {
 
-    private val configs = plugin.configs
-    private val helpers = plugin.helpers
-
-    private var config = Config(configs.getConfig("config"), plugin)
+    private var config = Config(ConfigUtil.getConfig("config"), plugin)
     lateinit var scope: CoroutineScope
 
     override fun sendImage(string: String): CompletableFuture<Unit> = scope.future {
@@ -265,7 +264,7 @@ open class Discordo(private val plugin: Main) : DiscordoAPI {
                 if (code.matches(Regex("&((${config.colorRegex})|(${config.hexRegex}))"))) {
                     // After every color code, the styles are reset.
                     currentStyles = ""
-                    currentColor = helpers.getColor(code)
+                    currentColor = HelperUtil.getColor(code)
                     g2d.color = currentColor
                 }
 
@@ -313,7 +312,7 @@ open class Discordo(private val plugin: Main) : DiscordoAPI {
 
         // Draw the text shadow.
         if (config.textShadowEnabled) {
-            g2d.color = helpers.darkenColor(currentColor, config.textShadowDarkness)
+            g2d.color = HelperUtil.darkenColor(currentColor, config.textShadowDarkness)
             g2d.drawString(string, stringX + textShadowOffset, stringY + textShadowOffset)
 
             if (currentStyles.lowercase().contains("n")) {
@@ -342,7 +341,7 @@ open class Discordo(private val plugin: Main) : DiscordoAPI {
     }
 
     fun reload() {
-        config = Config(configs.getConfig("config"), plugin)
+        config = Config(ConfigUtil.getConfig("config"), plugin)
     }
 
     data class Config(private val config: YamlDocument?, private val plugin: Main) {

@@ -12,43 +12,29 @@ import org.bukkit.plugin.java.JavaPlugin
 
 class Main: JavaPlugin(), DiscordoPlugin {
 
-    lateinit var helpers: Helpers
-        private set
-    lateinit var configs: Configs
-        private set
-    lateinit var messages: Messages
-        private set
     lateinit var discordo: Discordo
         private set
     lateinit var bot: Bot
         private set
-    lateinit var events: Events
-        private set
-    lateinit var commands: Commands
-        private set
 
     override fun onEnable() {
-        helpers = Helpers()
-        configs = Configs(this)
 
         // Load the configs before initialising the other utils.
-        configs.loadConfigs(this)
+        ConfigUtil.loadConfigs(this)
 
         // The order of these is important.
-        messages = Messages(this)
         discordo = Discordo(this)
         bot = Bot(this)
-        events = Events(this)
-        commands = Commands(this)
 
         discordo.scope = this.scope
 
-        commands.registerCommands()
-        events.registerListeners(this)
+        CommandUtil.createCommandHandler(this)
+        CommandUtil.registerCommands(this)
+        EventUtil.registerListeners(this)
 
         startBot()
 
-        if (helpers.getVersion(this) < 16) {
+        if (HelperUtil.getVersion(this) < 16) {
             val errorMessage = listOf(
                 "&8-------------------------------< &rDiscordo &8>-------------------------------",
                 " &rVersion not supported. This plugin may not work as expected on servers",
@@ -70,15 +56,15 @@ class Main: JavaPlugin(), DiscordoPlugin {
 
     fun reload() {
         // Reload all utils.
-        messages.reload()
+        MessageUtil.reload()
         discordo.reload()
 
         // Restart the bot.
         startBot(bot.client)
 
         // Register commands and events.
-        commands.registerCommands()
-        events.registerListeners(this)
+        CommandUtil.registerCommands(this)
+        EventUtil.registerListeners(this)
     }
 
     override fun getAPI(): DiscordoAPI {
