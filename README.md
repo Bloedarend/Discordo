@@ -41,7 +41,7 @@ softdepend: # Your plugin will enable without Discordo.
 </dependency>
 ```
 ### Using Discordo in your plugin.
-Using Discordo simple. First you want to check if the Discordo plugin is enabled. If this is the case, cast the plugin to `DiscordoPlugin` and get the api with the `DiscordoPlugin#getAPI()` method.
+Using Discordo is simple. First you want to check if the Discordo plugin is enabled. If this is the case, cast the plugin to `DiscordoPlugin` and get the api with the `DiscordoPlugin#getAPI()` method.
 
 ```java
 import org.bukkit.Bukkit;
