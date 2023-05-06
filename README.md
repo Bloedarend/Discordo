@@ -63,7 +63,7 @@ public final class MyPlugin extends JavaPlugin {
         }
         
         if (discordoAPI != null) {
-            discordoAPI.sendImage("&aDiscordo is successfully working!");
+            discordoAPI.sendImage("&aThis message was successfully sent from the &2" + this.getName() + "&a plugin!");
         }
     }
 }
