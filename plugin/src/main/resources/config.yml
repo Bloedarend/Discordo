@@ -32,6 +32,17 @@ minecraft:
     darkness: 3
 
   image:
+    # This plugin uses a special font pack to draw text onto images.
+    # This font pack is identical to Minecraft's font, but only supports the most commonly used characters from the Latin alphabet.
+    #
+    # By setting this option to false, the plugin will use a different font.
+    # This font is not identical to Minecraft's, but it looks very similar, though bold and italic do not look like they would do in Minecraft.
+    # The reason why one might want to use this font, is because it supports extra alphabets, such as Arabic, Cyrillic, Kana and many others.
+    # Although the font supports more alphabets, it is not perfect. For example, I could not use Kanji. If you know a better font, please contact me on Spigot or Discord.
+    #
+    # In short: Use a font identical to Minecraft's font which only supports Latin (true), or support more alphabets at the cost of looks (false).
+    use-font-pack: true
+
     # How much extra empty space should be between lines.
     # Type: Integer
     spacing: 0
@@ -180,4 +191,4 @@ discord:
 
 # The version of this config file.
 # (!) Do not change this value.
-file-version: 1
+file-version: 2

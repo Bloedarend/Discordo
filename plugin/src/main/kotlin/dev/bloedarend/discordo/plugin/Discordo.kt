@@ -347,6 +347,7 @@ open class Discordo(private val plugin: Main) : DiscordoAPI {
     data class Config(private val config: YamlDocument?, private val plugin: Main) {
         val textShadowEnabled = config?.getBoolean("minecraft.text-shadow.enabled") ?: true
         val textShadowDarkness = config?.getInt("minecraft.text-shadow.darkness") ?: 3
+        val useFontPack = config?.getBoolean("minecraft.image.use-font-pack") ?: true
         val spacing = config?.getInt("minecraft.image.spacing") ?: 3
         val padding = config?.getInt("minecraft.image.padding") ?: 8
         val width = config?.getInt("minecraft.image.width") ?: 900
@@ -357,10 +358,18 @@ open class Discordo(private val plugin: Main) : DiscordoAPI {
         val height = (fontSize + padding * 2).toInt()
         val maxStringWidth = width - 2 * padding
 
-        val fontRegular = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftRegular-Bmg3.ttf")).deriveFont(fontSize)
-        val fontBold = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftBold-nMK1.ttf")).deriveFont(fontSize)
-        val fontItalic = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftItalic-R8Mo.ttf")).deriveFont(fontSize)
-        val fontBoldItalic = Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("MinecraftBoldItalic-1y1e.ttf")).deriveFont(fontSize)
+        val fontRegular =
+            if (useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftRegular-Bmg3.ttf")).deriveFont(fontSize)
+            else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf")).deriveFont(fontSize * 0.8F)
+        val fontBold =
+            if (useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftBold-nMK1.ttf")).deriveFont(fontSize)
+            else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf")).deriveFont(fontSize * 0.8F).deriveFont(Font.BOLD)
+        val fontItalic =
+            if (useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftItalic-R8Mo.ttf")).deriveFont(fontSize)
+            else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf")).deriveFont(fontSize * 0.8F).deriveFont(Font.ITALIC)
+        val fontBoldItalic =
+            if (useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftBoldItalic-1y1e.ttf")).deriveFont(fontSize)
+            else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf")).deriveFont(fontSize * 0.8F).deriveFont(Font.BOLD or Font.ITALIC)
 
         val guildId = config?.getString("guild-id") ?: ""
         val channelId = config?.getString("channel-id") ?: ""
