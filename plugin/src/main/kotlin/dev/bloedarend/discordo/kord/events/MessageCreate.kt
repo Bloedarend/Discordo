@@ -513,7 +513,7 @@ class MessageCreate(private val plugin: Main) {
 
         // Get the first colored role of the user.
         val colorRole = roles.firstOrNull {
-            it.color != dev.kord.common.Color(0x99AAB5)
+            it.color.rgb != 0
         }
 
         val defaultHexColor = HelperUtil.convertColorCodeToHex(config.defaultRoleColor)
