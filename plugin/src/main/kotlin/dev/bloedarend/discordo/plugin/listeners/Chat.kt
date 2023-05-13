@@ -5,6 +5,7 @@ import dev.bloedarend.discordo.plugin.utils.ConfigUtil
 import dev.dejvokep.boostedyaml.YamlDocument
 import org.bukkit.ChatColor
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.AsyncPlayerChatEvent
 
@@ -12,10 +13,10 @@ class Chat(private val plugin: Main) : Listener {
 
     private val config: YamlDocument? = ConfigUtil.getConfig("config")
 
-    private val enabled = config?.getBoolean("minecraft.enabled") ?: false
+    private val enabled = config?.getBoolean("minecraft.enabled") ?: true
     private val translateColorCodes = config?.getBoolean("minecraft.translate-color-codes") ?: false
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     fun onAsyncPlayerChat(event: AsyncPlayerChatEvent) {
         if (!enabled) return
         if (plugin.bot.client == null) return // Can't send messages if the bot client is not ready.

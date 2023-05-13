@@ -21,12 +21,12 @@ class HelperUtil private constructor() {
         }
 
         fun getColor(colorCode: String) : Color {
-            val hex = (if (colorCode.matches(Regex("&([a-fA-F0-9]|r|R)"))) convertColorCodeToHex(colorCode) else colorCode)?.substring(1)
+            val hex = (if (colorCode.matches(Regex("&([a-fA-F0-9]|r|R)"))) convertColorCodeToHex(colorCode) else colorCode).substring(1)
 
             return Color.decode(hex)
         }
 
-        private fun convertColorCodeToHex(colorCode: String): String? {
+        fun convertColorCodeToHex(colorCode: String): String {
             return when (colorCode.lowercase()) {
                 "&0" -> "&#000000"
                 "&1" -> "&#0000aa"
@@ -45,8 +45,16 @@ class HelperUtil private constructor() {
                 "&e" -> "&#ffff55"
                 "&f" -> "&#ffffff"
                 "&r" -> "&#ffffff"
-                else -> null
+                else -> colorCode
             }
+        }
+
+        fun convertHexToRGB(hex: String): Triple<Int, Int, Int> {
+            val r = Integer.valueOf(hex.substring(1, 3), 16)
+            val g = Integer.valueOf(hex.substring(3, 5), 16)
+            val b = Integer.valueOf(hex.substring(5, 7), 16)
+
+            return Triple(r, g, b)
         }
 
         fun darkenColor(color: Color, amount: Int): Color {
