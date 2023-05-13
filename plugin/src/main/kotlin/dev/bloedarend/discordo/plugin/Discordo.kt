@@ -168,7 +168,7 @@ open class Discordo(private val plugin: Main) : DiscordoAPI {
         loadGraphics2D(g2d, currentFont, currentColor, image)
 
         // Split the string into words and split it up into multiple lines.
-        val words = string.split(" ")
+        val words = string.replace('§', '&').split(" ")
         words.forEach { word ->
             val stringWidth = getStringWidth(g2d, "$word ")
 
