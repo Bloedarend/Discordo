@@ -17,7 +17,6 @@ class Bot(private val plugin: Main) {
         private set
     private lateinit var token: String
 
-    private val messageCreate = MessageCreate(plugin)
     suspend fun start() {
         initialize()
 
@@ -47,7 +46,7 @@ class Bot(private val plugin: Main) {
 
     private suspend fun registerEvents() {
         client!!.on<MessageCreateEvent> {
-            messageCreate.onMessageCreate(this)
+            MessageCreate(plugin).onMessageCreate(this)
         }
     }
 
