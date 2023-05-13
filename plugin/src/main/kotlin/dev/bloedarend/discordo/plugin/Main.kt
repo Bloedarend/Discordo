@@ -19,7 +19,6 @@ class Main: JavaPlugin(), DiscordoPlugin {
 
     override fun onEnable() {
         ConfigUtil.loadConfigs(this)
-        HelperUtil.testFonts(this)
 
         discordo = Discordo(this)
         discordo.scope = this.scope

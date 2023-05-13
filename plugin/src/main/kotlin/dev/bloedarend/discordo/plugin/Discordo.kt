@@ -14,13 +14,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.future
 import net.md_5.bungee.api.ChatColor
 import net.md_5.bungee.api.chat.TextComponent
-import org.bukkit.Bukkit
 import org.imgscalr.Scalr
 import java.awt.*
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.io.InputStream
 import java.lang.Exception
 import java.lang.NumberFormatException
@@ -131,47 +129,14 @@ open class Discordo(private val plugin: Main) : DiscordoAPI {
         return stringWidth
     }
 
-    private enum class DiscordoFont { REGULAR, BOLD, ITALIC, BOLD_ITALIC }
-
-    private fun getFont(discordoFont: DiscordoFont): Font {
-        val font = when (discordoFont) {
-            DiscordoFont.REGULAR -> try {
-                if (config.useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftRegular-Bmg3.ttf")).deriveFont(config.fontSize)
-                else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf")).deriveFont(config.fontSize * 0.8F)
-            } catch (exception: IOException) {
-                config.font.deriveFont(30F)
-            }
-            DiscordoFont.BOLD -> try {
-                if (config.useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftBold-nMK1.ttf")).deriveFont(config.fontSize)
-                else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf")).deriveFont(config.fontSize * 0.8F).deriveFont(Font.BOLD)
-            } catch (exception: IOException) {
-                config.font.deriveFont(30F).deriveFont(Font.BOLD)
-            }
-            DiscordoFont.ITALIC -> try {
-                if (config.useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftItalic-R8Mo.ttf")).deriveFont(config.fontSize)
-                else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf")).deriveFont(config.fontSize * 0.8F).deriveFont(Font.ITALIC)
-            } catch (exception: IOException) {
-                config.font.deriveFont(30F).deriveFont(Font.ITALIC)
-            }
-            DiscordoFont.BOLD_ITALIC -> try {
-                if (config.useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftBoldItalic-1y1e.ttf")).deriveFont(config.fontSize)
-                else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf")).deriveFont(config.fontSize * 0.8F).deriveFont(Font.BOLD or Font.ITALIC)
-            } catch (exception: IOException) {
-                config.font.deriveFont(30F).deriveFont(Font.BOLD or Font.ITALIC)
-            }
-        }
-
-        return font
-    }
-
     private fun getFont(styles: String): Font {
         val isBold = styles.lowercase().contains("l")
         val isItalic = styles.lowercase().contains("o")
 
-        return if (isBold && isItalic) getFont(DiscordoFont.BOLD_ITALIC)
-        else if (isBold) getFont(DiscordoFont.BOLD)
-        else if (isItalic) getFont(DiscordoFont.ITALIC)
-        else getFont(DiscordoFont.REGULAR)
+        return if (isBold && isItalic) config.fontBoldItalic
+        else if (isBold) config.fontBold
+        else if (isItalic) config.fontItalic
+        else config.fontRegular
     }
 
     private fun loadGraphics2D(g2d: Graphics2D, currentFont: Font, currentColor: Color, image: BufferedImage) {
@@ -190,7 +155,7 @@ open class Discordo(private val plugin: Main) : DiscordoAPI {
     }
 
     private fun getInputStream(string: String): InputStream {
-        var currentFont = getFont(DiscordoFont.REGULAR)
+        var currentFont = config.fontRegular
         var currentColor = Color.WHITE
         var currentWidth = 0
         var currentStyles = ""
@@ -377,7 +342,6 @@ open class Discordo(private val plugin: Main) : DiscordoAPI {
 
     fun reload() {
         config = Config(ConfigUtil.getConfig("config"), plugin)
-        HelperUtil.testFonts(plugin)
     }
 
     data class Config(private val config: YamlDocument?, private val plugin: Main) {
@@ -390,10 +354,22 @@ open class Discordo(private val plugin: Main) : DiscordoAPI {
         val backgroundOpacity = config?.getFloat("minecraft.image.background-opacity") ?: 0.4F
         val backgroundColor = Color(0F, 0F, 0F, if (backgroundOpacity < 0) 0F else if (backgroundOpacity > 1) 1F else backgroundOpacity)
 
-        val font = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics().font
         val fontSize = 30F
         val height = (fontSize + padding * 2).toInt()
         val maxStringWidth = width - 2 * padding
+
+        val fontRegular =
+            if (useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftRegular-Bmg3.ttf")).deriveFont(fontSize)
+            else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf")).deriveFont(fontSize * 0.8F)
+        val fontBold =
+            if (useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftBold-nMK1.ttf")).deriveFont(fontSize)
+            else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf")).deriveFont(fontSize * 0.8F).deriveFont(Font.BOLD)
+        val fontItalic =
+            if (useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftItalic-R8Mo.ttf")).deriveFont(fontSize)
+            else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf")).deriveFont(fontSize * 0.8F).deriveFont(Font.ITALIC)
+        val fontBoldItalic =
+            if (useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftBoldItalic-1y1e.ttf")).deriveFont(fontSize)
+            else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf")).deriveFont(fontSize * 0.8F).deriveFont(Font.BOLD or Font.ITALIC)
 
         val guildId = config?.getString("guild-id") ?: ""
         val channelId = config?.getString("channel-id") ?: ""

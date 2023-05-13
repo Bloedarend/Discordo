@@ -1,10 +1,7 @@
 package dev.bloedarend.discordo.plugin.utils
 
 import dev.bloedarend.discordo.plugin.Main
-import org.bukkit.plugin.Plugin
 import java.awt.Color
-import java.awt.Font
-import java.io.IOException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -57,40 +54,7 @@ class HelperUtil private constructor() {
 
             return darkenColor(color.darker(), amount - 1)
         }
-
-        fun testFonts(plugin: Plugin) {
-            val config = ConfigUtil.getConfig("config")
-            val useFontPack = config?.getBoolean("minecraft.image.use-font-pack") ?: true
-
-            try {
-                if (useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftRegular-Bmg3.ttf"))
-                else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf"))
-            } catch (exception: IOException) {
-                plugin.logger.warning("Font regular could not be found, using default font!")
-            }
-
-            try {
-                if (useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftBold-nMK1.ttf"))
-                else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf"))
-            } catch (exception: IOException) {
-                plugin.logger.warning("Font bold could not be found, using default font!")
-            }
-
-            try {
-                if (useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftItalic-R8Mo.ttf"))
-                else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf"))
-            } catch (exception: IOException) {
-                plugin.logger.warning("Font italic could not be found, using default font!")
-            }
-
-            try {
-                if (useFontPack) Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/MinecraftBoldItalic-1y1e.ttf"))
-                else Font.createFont(Font.TRUETYPE_FONT, plugin.getResource("fonts/F77MinecraftRegular-0VYv.ttf"))
-            } catch (exception: IOException) {
-                plugin.logger.warning("Font bold-italic could not be found, using default font!")
-            }
-        }
-
     }
+
 
 }
