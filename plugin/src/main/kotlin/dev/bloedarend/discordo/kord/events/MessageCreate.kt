@@ -506,11 +506,6 @@ class MessageCreate(private val plugin: Main) {
     private suspend fun getMemberColor(member: Member): String {
         val roles = member.roles.toList().sortedDescending()
 
-        roles.forEach {
-            println("${it.name}, ${it.color.rgb}")
-        }
-        println(config.defaultRoleColor)
-
         // Get the first colored role of the user.
         val colorRole = roles.firstOrNull {
             it.color.rgb != 0
