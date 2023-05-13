@@ -66,6 +66,11 @@ minecraft:
     # Type: Boolean
     enabled: true
 
+    # Use the custom join message from the 'language.yml' file.
+    # If set to false, it will use your server's join message.
+    # Type: Boolean
+    use-custom: true
+
     # A join message won't be sent if a player has the permission 'discordo.silent.join'.
     # Requires 'minecraft.join.enabled' to be set to true.
     # Type: Boolean
@@ -77,10 +82,21 @@ minecraft:
     # Type: Boolean
     enabled: true
 
+    # Use the custom leave message from the 'language.yml' file.
+    # If set to false, it will use your server's leave message.
+    # Type: Boolean
+    use-custom: true
+
     # A leave message won't be sent if a player has the permission 'discordo.silent.leave'.
     # Requires 'minecraft.leave.enabled' to be set to true.
     # Type: Boolean
     silent: false
+
+  death:
+    # Send a message to Discord when a player dies.
+    # This message can be configured inside the 'language.yml' file.
+    # Type: Boolean
+    enabled: false
 
 # This section concerns messages sent from Discord to Minecraft.
 discord:
@@ -121,6 +137,11 @@ discord:
   # Documentation for date formatting can be found here: https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
   # Type: String
   date-format: "d MMMM yyyy, hh:mm:ss"
+
+  # The color the plugin should use if the user's role has no color at all (default color).
+  # This setting supports both Bukkit color codes (&f) and hex codes (&#ffffff).
+  # Type: String
+  default-role-color: "&f"
 
   # Display text when a player hovers over the discord member's username.
   # Type: Boolean
@@ -191,4 +212,4 @@ discord:
 
 # The version of this config file.
 # (!) Do not change this value.
-file-version: 2
+file-version: 3

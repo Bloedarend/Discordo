@@ -14,6 +14,7 @@ prefix: "●"
 minecraft:
   join: "&x[&a&l+&x] &y%player_name%"
   leave: "&x[&c&l-&x] &y%player_name%"
+  death:
 
 discord:
   # The format in which Discord messages will be shown in Minecraft.
@@ -22,7 +23,7 @@ discord:
 
   # The hover that appears when a player hovers over the discord member's username.
   # The %role_name% placeholder will return the name of the highest role the member has with the setting 'Display separately' enabled.
-  # The %role_color% placeholder will return the color of the highest role the member has with a defined color. Invisible roles are ignored.
+  # The %role_color% placeholder will return the color of the highest role the member has with a defined color. Invisible / black (#000000) roles are ignored.
   # Valid placeholders are: %member_name%, %member_displayname%, %member_tag%, %member_roles%, %role_name%, %role_color%, %message_date%
   hover:
     - "&x&lMessage information"
@@ -131,4 +132,4 @@ commands:
 
 # The version of this config file.
 # (!) Do not change this value.
-file-version: 2
+file-version: 3
