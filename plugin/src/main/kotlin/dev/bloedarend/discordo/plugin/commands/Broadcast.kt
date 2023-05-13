@@ -16,7 +16,7 @@ class Broadcast(private val plugin: Main) {
     @Usage("dco broadcast")
     fun onCommand(sender: CommandSender, message: String) {
         plugin.discordo.sendImage(
-            MessageUtil.getMessage("commands.broadcast.format", sender, Pair("%message%", message)).replace('§', '&')
+            MessageUtil.getMessage("commands.broadcast.format", sender, Pair("%message%", message))
         )
 
         MessageUtil.sendMessage("commands.broadcast.message", sender)
