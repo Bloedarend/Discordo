@@ -1,7 +1,9 @@
 package dev.bloedarend.discordo.kord.events
 
 import com.vdurmont.emoji.EmojiParser
+import dev.bloedarend.discordo.plugin.Discordo
 import dev.bloedarend.discordo.plugin.Main
+import dev.bloedarend.discordo.plugin.commands.Help
 import dev.bloedarend.discordo.plugin.utils.ConfigUtil
 import dev.bloedarend.discordo.plugin.utils.HelperUtil
 import dev.bloedarend.discordo.plugin.utils.MessageUtil
@@ -28,7 +30,11 @@ class MessageCreate(private val plugin: Main) {
 
     private val discordo = plugin.discordo
 
-    private val config = Config(ConfigUtil.getConfig("config"))
+    private var config = Config(ConfigUtil.getConfig("config"))
+
+    init {
+        reload()
+    }
 
     suspend fun onMessageCreate(event: MessageCreateEvent) {
         val message = event.message
@@ -383,7 +389,7 @@ class MessageCreate(private val plugin: Main) {
 
         // The reset code will not default to white, but use the latest component color.
         // So here we'll replace it with '&f', to get the expected effect.
-        var message = string.replace("&r", "&f").replace("&R", "&f")
+        var message = string.replace('§', '&').replace("&r", "&f").replace("&R", "&f")
 
         // Translate the message.
         message = ChatColor.translateAlternateColorCodes('&', message)
@@ -500,12 +506,20 @@ class MessageCreate(private val plugin: Main) {
     private suspend fun getMemberColor(member: Member): String {
         val roles = member.roles.toList().sortedDescending()
 
+        roles.forEach {
+            println("${it.name}, ${it.color.rgb}")
+        }
+        println(config.defaultRoleColor)
+
         // Get the first colored role of the user.
         val colorRole = roles.firstOrNull {
             it.color != dev.kord.common.Color(0x99AAB5)
         }
 
-        val color = colorRole?.color ?: dev.kord.common.Color(170, 170, 170)
+        val defaultHexColor = HelperUtil.convertColorCodeToHex(config.defaultRoleColor)
+        val defaultColor = HelperUtil.convertHexToRGB(defaultHexColor.substring(1))
+
+        val color = colorRole?.color ?: dev.kord.common.Color(defaultColor.first, defaultColor.second, defaultColor.third)
 
         return String.format("&#%02x%02x%02x", color.red, color.green, color.blue)
     }
@@ -546,6 +560,10 @@ class MessageCreate(private val plugin: Main) {
         return styles
     }
 
+    fun reload() {
+        config = Config(ConfigUtil.getConfig("config"))
+    }
+
     data class Config(private val config: YamlDocument?) {
         val channelId = config?.getString("channel-id") ?: ""
 
@@ -557,6 +575,7 @@ class MessageCreate(private val plugin: Main) {
         val ignoreEmpty = config?.getBoolean("discord.ignore-empty") ?: true
         val replaceMessages = config?.getBoolean("discord.replace-messages") ?: false
         val dateFormat = config?.getString("discord.date-format") ?: "d MMMM yyyy, hh:mm:ss"
+        val defaultRoleColor = config?.getString("discord.default-role-color") ?: "&f"
         val mentionsEnabled = config?.getBoolean("discord.mentions.enabled") ?: true
         val highlightMentions = config?.getBoolean("discord.mentions.highlight") ?: true
         val mainHoverEnabled = config?.getBoolean("discord.hover") ?: true
