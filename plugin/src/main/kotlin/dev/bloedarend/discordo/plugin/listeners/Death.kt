@@ -1,6 +1,6 @@
 package dev.bloedarend.discordo.plugin.listeners
 
-import dev.bloedarend.discordo.plugin.Discordo
+import dev.bloedarend.discordo.plugin.Main
 import dev.bloedarend.discordo.plugin.utils.ConfigUtil
 import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
@@ -8,7 +8,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
 
-class Death(private val discordo: Discordo) : Listener {
+class Death(private val plugin: Main) : Listener {
 
     private val config = ConfigUtil.getConfig("config")
 
@@ -21,7 +21,7 @@ class Death(private val discordo: Discordo) : Listener {
 
         val message = event.deathMessage ?: return Bukkit.getLogger().warning("The death message is null, so it cannot be sent to Discord.\"")
 
-        discordo.sendImage(message)
+        plugin.discordo.sendImage(message)
     }
 
 }
