@@ -2,7 +2,7 @@ package dev.bloedarend.discordo.kord
 
 import dev.bloedarend.discordo.kord.events.MessageCreate
 import dev.bloedarend.discordo.plugin.Main
-import dev.bloedarend.discordo.plugin.utils.ConfigUtil
+import dev.bloedarend.discordo.plugin.handlers.ConfigHandler
 import dev.kord.core.Kord
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.KordInitializationException
@@ -27,7 +27,7 @@ class Bot(private val plugin: Main) {
     }
 
     private suspend fun initialize() {
-        token = ConfigUtil.getConfig("token")?.getString("token") ?: ""
+        token = ConfigHandler.getConfig("token")?.getString("token") ?: ""
 
         val errorMessage = listOf(
             "&8-------------------------------< &rDiscordo &8>-------------------------------",

@@ -5,6 +5,9 @@ import com.github.shynixn.mccoroutine.bukkit.scope
 import dev.bloedarend.discordo.api.DiscordoAPI
 import dev.bloedarend.discordo.api.DiscordoPlugin
 import dev.bloedarend.discordo.kord.Bot
+import dev.bloedarend.discordo.plugin.handlers.CommandHandler
+import dev.bloedarend.discordo.plugin.handlers.ConfigHandler
+import dev.bloedarend.discordo.plugin.handlers.EventHandler
 import dev.bloedarend.discordo.plugin.utils.*
 import dev.kord.core.Kord
 import org.bukkit.ChatColor
@@ -18,16 +21,16 @@ class Main: JavaPlugin(), DiscordoPlugin {
         private set
 
     override fun onEnable() {
-        ConfigUtil.loadConfigs(this)
+        ConfigHandler.loadConfigs(this)
 
         discordo = Discordo(this)
         discordo.scope = this.scope
 
         bot = Bot(this)
 
-        CommandUtil.createCommandHandler(this)
-        CommandUtil.registerCommands(this)
-        EventUtil.registerListeners(this)
+        CommandHandler.createCommandHandler(this)
+        CommandHandler.registerCommands(this)
+        EventHandler.registerListeners(this)
 
         startBot()
 
@@ -60,8 +63,8 @@ class Main: JavaPlugin(), DiscordoPlugin {
         startBot(bot.client)
 
         // Register commands and events.
-        CommandUtil.registerCommands(this)
-        EventUtil.registerListeners(this)
+        CommandHandler.registerCommands(this)
+        EventHandler.registerListeners(this)
     }
 
     override fun getAPI(): DiscordoAPI {

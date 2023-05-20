@@ -1,6 +1,6 @@
 package dev.bloedarend.discordo.plugin.commands
 
-import dev.bloedarend.discordo.plugin.utils.ConfigUtil
+import dev.bloedarend.discordo.plugin.handlers.ConfigHandler
 import dev.bloedarend.discordo.plugin.utils.MessageUtil
 import dev.dejvokep.boostedyaml.YamlDocument
 import org.bukkit.command.CommandSender
@@ -10,7 +10,7 @@ import revxrsal.commands.annotation.Usage
 
 class Help {
 
-    private val config: YamlDocument? = ConfigUtil.getConfig("language")
+    private val config: YamlDocument? = ConfigHandler.getConfig("language")
 
     private val useSeparator = config?.getBoolean("command.help.use-separator") ?: true
 

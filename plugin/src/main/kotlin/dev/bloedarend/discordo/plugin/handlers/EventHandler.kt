@@ -1,4 +1,4 @@
-package dev.bloedarend.discordo.plugin.utils
+package dev.bloedarend.discordo.plugin.handlers
 
 import com.github.shynixn.mccoroutine.bukkit.registerSuspendingEvents
 import dev.bloedarend.discordo.plugin.Main
@@ -7,9 +7,8 @@ import dev.bloedarend.discordo.plugin.listeners.Death
 import dev.bloedarend.discordo.plugin.listeners.JoinLeave
 import org.bukkit.Bukkit
 import org.bukkit.event.HandlerList
-import org.bukkit.plugin.Plugin
 
-class EventUtil private constructor() {
+class EventHandler private constructor() {
 
     companion object {
         fun registerListeners(plugin: Main) {

@@ -1,4 +1,4 @@
-package dev.bloedarend.discordo.plugin.utils
+package dev.bloedarend.discordo.plugin.handlers
 
 import dev.dejvokep.boostedyaml.YamlDocument
 import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning
@@ -9,7 +9,7 @@ import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
 import org.bukkit.plugin.Plugin
 import java.io.File
 
-class ConfigUtil private constructor() {
+class ConfigHandler private constructor() {
 
     companion object {
         private val configFiles: HashMap<String, YamlDocument> = HashMap()

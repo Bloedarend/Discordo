@@ -1,5 +1,6 @@
 package dev.bloedarend.discordo.plugin.utils
 
+import dev.bloedarend.discordo.plugin.handlers.ConfigHandler
 import dev.dejvokep.boostedyaml.YamlDocument
 import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
@@ -9,7 +10,7 @@ import java.util.regex.Pattern
 class MessageUtil private constructor() {
 
     companion object {
-        private var config = Config(ConfigUtil.getConfig("language"))
+        private var config = Config(ConfigHandler.getConfig("language"))
 
         fun sendMessage(path: String, sender: CommandSender, vararg placeholders: Pair<String, String>) {
             val message = config.language?.getString(path)
@@ -72,7 +73,7 @@ class MessageUtil private constructor() {
         }
 
         fun reload() {
-            config = Config(ConfigUtil.getConfig("language"))
+            config = Config(ConfigHandler.getConfig("language"))
         }
 
         data class Config(private val config: YamlDocument?) {

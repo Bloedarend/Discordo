@@ -1,7 +1,7 @@
 package dev.bloedarend.discordo.plugin.listeners
 
 import dev.bloedarend.discordo.plugin.Main
-import dev.bloedarend.discordo.plugin.utils.ConfigUtil
+import dev.bloedarend.discordo.plugin.handlers.ConfigHandler
 import dev.dejvokep.boostedyaml.YamlDocument
 import org.bukkit.ChatColor
 import org.bukkit.event.EventHandler
@@ -11,7 +11,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent
 
 class Chat(private val plugin: Main) : Listener {
 
-    private val config: YamlDocument? = ConfigUtil.getConfig("config")
+    private val config: YamlDocument? = ConfigHandler.getConfig("config")
 
     private val enabled = config?.getBoolean("minecraft.enabled") ?: true
     private val translateColorCodes = config?.getBoolean("minecraft.translate-color-codes") ?: false

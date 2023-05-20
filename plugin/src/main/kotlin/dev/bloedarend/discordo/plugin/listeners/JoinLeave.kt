@@ -1,11 +1,10 @@
 package dev.bloedarend.discordo.plugin.listeners
 
 import dev.bloedarend.discordo.plugin.Main
-import dev.bloedarend.discordo.plugin.utils.ConfigUtil
+import dev.bloedarend.discordo.plugin.handlers.ConfigHandler
 import dev.bloedarend.discordo.plugin.utils.MessageUtil
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
-import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -14,7 +13,7 @@ import org.bukkit.event.player.PlayerQuitEvent
 
 class JoinLeave(private val plugin: Main) : Listener {
 
-    private val config = ConfigUtil.getConfig("config")
+    private val config = ConfigHandler.getConfig("config")
 
     private val enabled = config?.getBoolean("minecraft.enabled") ?: true
     private val joinEnabled = config?.getBoolean("minecraft.join.enabled") ?: true

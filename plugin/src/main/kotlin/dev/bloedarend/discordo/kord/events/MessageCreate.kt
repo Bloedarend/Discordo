@@ -1,10 +1,8 @@
 package dev.bloedarend.discordo.kord.events
 
 import com.vdurmont.emoji.EmojiParser
-import dev.bloedarend.discordo.plugin.Discordo
 import dev.bloedarend.discordo.plugin.Main
-import dev.bloedarend.discordo.plugin.commands.Help
-import dev.bloedarend.discordo.plugin.utils.ConfigUtil
+import dev.bloedarend.discordo.plugin.handlers.ConfigHandler
 import dev.bloedarend.discordo.plugin.utils.HelperUtil
 import dev.bloedarend.discordo.plugin.utils.MessageUtil
 import dev.dejvokep.boostedyaml.YamlDocument
@@ -30,7 +28,7 @@ class MessageCreate(private val plugin: Main) {
 
     private val discordo = plugin.discordo
 
-    private var config = Config(ConfigUtil.getConfig("config"))
+    private var config = Config(ConfigHandler.getConfig("config"))
 
     init {
         reload()
@@ -556,7 +554,7 @@ class MessageCreate(private val plugin: Main) {
     }
 
     fun reload() {
-        config = Config(ConfigUtil.getConfig("config"))
+        config = Config(ConfigHandler.getConfig("config"))
     }
 
     data class Config(private val config: YamlDocument?) {

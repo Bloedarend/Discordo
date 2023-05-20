@@ -1,7 +1,7 @@
 package dev.bloedarend.discordo.plugin
 
 import dev.bloedarend.discordo.api.DiscordoAPI
-import dev.bloedarend.discordo.plugin.utils.ConfigUtil
+import dev.bloedarend.discordo.plugin.handlers.ConfigHandler
 import dev.bloedarend.discordo.plugin.utils.HelperUtil
 import dev.dejvokep.boostedyaml.YamlDocument
 import dev.kord.common.entity.Snowflake
@@ -28,7 +28,7 @@ import javax.imageio.ImageIO
 
 open class Discordo(private val plugin: Main) : DiscordoAPI {
 
-    private var config = Config(ConfigUtil.getConfig("config"), plugin)
+    private var config = Config(ConfigHandler.getConfig("config"), plugin)
     lateinit var scope: CoroutineScope
 
     override fun sendImage(string: String): CompletableFuture<Unit> = scope.future {
@@ -341,7 +341,7 @@ open class Discordo(private val plugin: Main) : DiscordoAPI {
     }
 
     fun reload() {
-        config = Config(ConfigUtil.getConfig("config"), plugin)
+        config = Config(ConfigHandler.getConfig("config"), plugin)
     }
 
     data class Config(private val config: YamlDocument?, private val plugin: Main) {

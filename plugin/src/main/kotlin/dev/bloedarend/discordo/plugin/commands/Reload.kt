@@ -1,9 +1,9 @@
 package dev.bloedarend.discordo.plugin.commands
 
 import dev.bloedarend.discordo.plugin.Main
-import dev.bloedarend.discordo.plugin.utils.CommandUtil
-import dev.bloedarend.discordo.plugin.utils.ConfigUtil
-import dev.bloedarend.discordo.plugin.utils.EventUtil
+import dev.bloedarend.discordo.plugin.handlers.CommandHandler
+import dev.bloedarend.discordo.plugin.handlers.ConfigHandler
+import dev.bloedarend.discordo.plugin.handlers.EventHandler
 import dev.bloedarend.discordo.plugin.utils.MessageUtil
 import org.bukkit.command.CommandSender
 import revxrsal.commands.annotation.Command
@@ -21,11 +21,11 @@ class Reload(private val plugin: Main) {
         val startTime = System.currentTimeMillis()
 
         // Unregister events and commands, because all config properties are initialised in the class.
-        CommandUtil.unregisterCommands()
-        EventUtil.unregisterListeners()
+        CommandHandler.unregisterCommands()
+        EventHandler.unregisterListeners()
 
         // Reload configs.
-        ConfigUtil.reloadConfigs()
+        ConfigHandler.reloadConfigs()
         plugin.reload()
 
         MessageUtil.sendMessage("commands.reload.message", sender,
