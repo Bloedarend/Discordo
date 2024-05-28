@@ -31,6 +31,27 @@ open class Discordo(private val plugin: Main) : DiscordoAPI {
     private var config = Config(ConfigUtil.getConfig("config"), plugin)
     lateinit var scope: CoroutineScope
 
+    fun sendText(string: String) = scope.future {
+        val client = plugin.bot.client ?: return@future
+        val guildSnowflake: Snowflake?
+        val channelSnowflake: Snowflake?
+        val channelId = config.channelId
+
+        try {
+            guildSnowflake = Snowflake(config.guildId)
+            channelSnowflake = Snowflake(channelId)
+        } catch (exception: NumberFormatException) {
+            throw Exception("The guild id '${config.guildId}' or the channel id '$channelId' are incorrect!")
+        }
+
+        if (config.guildId.isEmpty() || channelId.isEmpty()) return@future
+
+        val guild = client.getGuildOrNull(guildSnowflake) ?: throw Exception("Guild with guildId '${config.guildId}' could not be found.")
+        val channel = guild.getChannelOfOrNull<TextChannel>(channelSnowflake) ?: throw Exception("Channel with channelId '${channelId}' could not be found.")
+
+        channel.createMessage(string)
+    }
+
     override fun sendImage(string: String): CompletableFuture<Unit> = scope.future {
         createMessage(getInputStream(string), config.channelId)
     }

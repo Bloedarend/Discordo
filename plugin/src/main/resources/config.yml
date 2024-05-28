@@ -32,6 +32,12 @@ minecraft:
     darkness: 3
 
   image:
+    # Display messages from Minecraft as a formatted image in Discord.
+    # If disabled, messages will appear as plain text.
+    #
+    # Type: Boolean
+    enabled: true
+
     # This plugin uses a special font pack to draw text onto images.
     # This font pack is identical to Minecraft's font, but only supports the most commonly used characters from the Latin alphabet.
     #
@@ -212,4 +218,4 @@ discord:
 
 # The version of this config file.
 # (!) Do not change this value.
-file-version: 3
+file-version: 4

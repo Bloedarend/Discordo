@@ -3,6 +3,7 @@ package dev.bloedarend.discordo.plugin.listeners
 import dev.bloedarend.discordo.plugin.Main
 import dev.bloedarend.discordo.plugin.utils.ConfigUtil
 import org.bukkit.Bukkit
+import org.bukkit.ChatColor
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -21,7 +22,12 @@ class Death(private val plugin: Main) : Listener {
 
         val message = event.deathMessage ?: return Bukkit.getLogger().warning("The death message is null, so it cannot be sent to Discord.\"")
 
-        plugin.discordo.sendImage(message)
+        if (config?.getBoolean("minecraft.image.enabled") == true) {
+            plugin.discordo.sendImage(message)
+        } else {
+            plugin.discordo.sendText(ChatColor.stripColor(message) ?: return)
+        }
+
     }
 
 }
