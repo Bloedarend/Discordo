@@ -36,7 +36,11 @@ class JoinLeave(private val plugin: Main) : Listener {
             if (joinUseCustom) MessageUtil.getMessage("minecraft.join", player).replace("${ChatColor.COLOR_CHAR}","&")
             else event.joinMessage ?: return Bukkit.getLogger().warning("The join message is null, so it cannot be sent to Discord.")
 
-        plugin.discordo.sendImage(message)
+        if (config?.getBoolean("minecraft.image.enabled") == true) {
+            plugin.discordo.sendImage(message)
+        } else {
+            plugin.discordo.sendText(ChatColor.stripColor("\uD83D\uDFE2 ${player.displayName}") ?: return)
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -51,6 +55,10 @@ class JoinLeave(private val plugin: Main) : Listener {
             if (leaveUseCustom) MessageUtil.getMessage("minecraft.leave", player).replace("${ChatColor.COLOR_CHAR}","&")
             else event.quitMessage ?: return Bukkit.getLogger().warning("The leave message is null, so it cannot be sent to Discord.")
 
-        plugin.discordo.sendImage(message)
+        if (config?.getBoolean("minecraft.image.enabled") == true) {
+            plugin.discordo.sendImage(message)
+        } else {
+            plugin.discordo.sendText(ChatColor.stripColor("\uD83D\uDD34 ${player.displayName}") ?: return)
+        }
     }
 }

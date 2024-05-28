@@ -31,7 +31,11 @@ class Chat(private val plugin: Main) : Listener {
 
         val text = String.format(event.format, player.displayName.replace("${ChatColor.COLOR_CHAR}","&"), message)
 
-        plugin.discordo.sendImage(text)
+        if (config?.getBoolean("minecraft.image.enabled") == true) {
+            plugin.discordo.sendImage(text)
+        } else {
+            plugin.discordo.sendText(ChatColor.stripColor("**${player.name}** ${event.message}") ?: return)
+        }
     }
 
 }
